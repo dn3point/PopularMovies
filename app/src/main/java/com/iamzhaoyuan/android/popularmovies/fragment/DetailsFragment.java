@@ -16,17 +16,20 @@ import com.iamzhaoyuan.android.popularmovies.entity.Movie;
 import com.iamzhaoyuan.android.popularmovies.util.MovieUtil;
 import com.squareup.picasso.Picasso;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * A simple {@link Fragment} subclass.
  */
 public class DetailsFragment extends Fragment {
     private static final String LOG_TAG = DetailsFragment.class.getSimpleName();
 
-    private TextView mTitleTextView;
-    private ImageView mPosterImageView;
-    private TextView mReleaseDateTextView;
-    private TextView mRatingTextView;
-    private TextView mOverviewTextView;
+    @BindView(R.id.movie_title) TextView mTitleTextView;
+    @BindView(R.id.movie_poster) ImageView mPosterImageView;
+    @BindView(R.id.movie_release_date) TextView mReleaseDateTextView;
+    @BindView(R.id.movie_rating) TextView mRatingTextView;
+    @BindView(R.id.movie_overview) TextView mOverviewTextView;
 
     public DetailsFragment() {
     }
@@ -48,17 +51,7 @@ public class DetailsFragment extends Fragment {
         }
 
         if (movie != null) {
-            // UI components
-            mTitleTextView =
-                    (TextView) rootView.findViewById(R.id.movie_title);
-            mPosterImageView =
-                    (ImageView) rootView.findViewById(R.id.movie_poster);
-            mReleaseDateTextView =
-                    (TextView) rootView.findViewById(R.id.movie_release_date);
-            mRatingTextView =
-                    (TextView) rootView.findViewById(R.id.movie_rating);
-            mOverviewTextView =
-                    (TextView) rootView.findViewById(R.id.movie_overview);
+            ButterKnife.bind(this, rootView);
             // Set contents
             final String RATING_SUFFIX = "/10";
             MovieUtil movieUtil = MovieUtil.getInstance();

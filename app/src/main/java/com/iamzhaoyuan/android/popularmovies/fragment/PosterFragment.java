@@ -1,8 +1,12 @@
 package com.iamzhaoyuan.android.popularmovies.fragment;
 
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -21,6 +25,7 @@ import com.iamzhaoyuan.android.popularmovies.R;
 import com.iamzhaoyuan.android.popularmovies.activity.DetailsActivity;
 import com.iamzhaoyuan.android.popularmovies.adapter.MovieAdapter;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
+import com.iamzhaoyuan.android.popularmovies.util.NetworkUtil;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,6 +48,15 @@ public class PosterFragment extends Fragment {
     private static final String LOG_TAG = PosterFragment.class.getSimpleName();
 
     private MovieAdapter mImageAdapter;
+    private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            NetworkUtil networkUtil = NetworkUtil.getInstance();
+            if (networkUtil.isNetworkConnected(context)) {
+                updatePosters();
+            }
+        }
+    };
 
     public PosterFragment() {
     }
@@ -50,7 +64,23 @@ public class PosterFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        updatePosters();
+        if (NetworkUtil.getInstance().isNetworkConnected(getActivity())) {
+            updatePosters();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        getActivity().registerReceiver(mNetworkReceiver, intentFilter);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        getActivity().unregisterReceiver(mNetworkReceiver);
     }
 
     @Override

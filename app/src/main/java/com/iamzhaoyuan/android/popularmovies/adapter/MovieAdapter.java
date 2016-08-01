@@ -20,6 +20,10 @@ import java.util.List;
 public class MovieAdapter extends ArrayAdapter<Movie> {
     private static final String LOG_TAG = MovieAdapter.class.getSimpleName();
 
+    private static class ViewHolder {
+        ImageView poster;
+    }
+
     public MovieAdapter(Activity context, List<Movie> movies) {
         super(context, 0, movies);
     }
@@ -28,20 +32,24 @@ public class MovieAdapter extends ArrayAdapter<Movie> {
     public View getView(int position, View convertView, ViewGroup parent) {
         MovieUtil movieUtil = MovieUtil.getInstance();
         String imageThumbnail = getItem(position).getImageThumbnail();
+        ViewHolder viewHolder;
 
         if (convertView == null) {
             convertView =
                     LayoutInflater.from(getContext()).inflate(
                             R.layout.grid_item_poster, parent, false);
+            viewHolder = new ViewHolder();
+            viewHolder.poster =
+                    (ImageView) convertView.findViewById(R.id.grid_item_poster_image);
+            convertView.setTag(viewHolder);
+        } else {
+            viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        ImageView posterView =
-                (ImageView) convertView.findViewById(R.id.grid_item_poster_image);
-
         Picasso.with(getContext())
-                .load(movieUtil.getPosterUrl(imageThumbnail)).into(posterView);
+                .load(movieUtil.getPosterUrl(imageThumbnail))
+                .into(viewHolder.poster);
 
         return convertView;
-
     }
 }
