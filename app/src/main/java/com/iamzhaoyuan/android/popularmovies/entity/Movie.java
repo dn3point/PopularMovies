@@ -12,17 +12,20 @@ public class Movie implements Parcelable {
     private String mOverview;
     private double mRating;
     private String mReleaseDate;
+    private String mId;
 
     public Movie(String title,
                  String imageThumbnail,
                  String overview,
                  double rating,
-                 String releaseDate) {
+                 String releaseDate,
+                 String id) {
         mTitle = title;
         mImageThumbnail = imageThumbnail;
         mOverview = overview;
         mRating = rating;
         mReleaseDate = releaseDate;
+        mId = id;
     }
 
     private Movie(Parcel in) {
@@ -31,6 +34,7 @@ public class Movie implements Parcelable {
         mOverview = in.readString();
         mRating = in.readDouble();
         mReleaseDate = in.readString();
+        mId = in.readString();
     }
 
     @Override
@@ -45,6 +49,7 @@ public class Movie implements Parcelable {
         dest.writeString(mOverview);
         dest.writeDouble(mRating);
         dest.writeString(mReleaseDate);
+        dest.writeString(mId);
     }
 
     public static final Parcelable.Creator<Movie> CREATOR =
@@ -101,5 +106,13 @@ public class Movie implements Parcelable {
 
     public void setReleaseDate(String releaseDate) {
         mReleaseDate = releaseDate;
+    }
+
+    public String getId() {
+        return mId;
+    }
+
+    public void setId(String id) {
+        mId = id;
     }
 }

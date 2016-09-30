@@ -50,6 +50,11 @@
                     android:paddingLeft="@dimen/movie_info_linear_layout_padding_left"
                     android:paddingRight="@dimen/movie_info_linear_layout_padding_right">
 
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/fav_btn"/>
+
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

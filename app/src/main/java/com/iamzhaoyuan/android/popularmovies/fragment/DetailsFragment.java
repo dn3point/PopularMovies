@@ -18,6 +18,7 @@ import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -30,6 +31,10 @@ public class DetailsFragment extends Fragment {
     @BindView(R.id.movie_release_date) TextView mReleaseDateTextView;
     @BindView(R.id.movie_rating) TextView mRatingTextView;
     @BindView(R.id.movie_overview) TextView mOverviewTextView;
+
+    @OnClick(R.id.fav_btn) void switchFavMovie() {
+
+    }
 
     public DetailsFragment() {
     }

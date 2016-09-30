@@ -125,7 +125,6 @@ public class PosterFragment extends Fragment {
             // Will contain the raw JSON response as a string.
             String moviesJsonStr = null;
             String sortBy = getSortBy();
-            int numDays = 7;
 
             try {
                 final String MOVIE_BASE_URL =
@@ -224,6 +223,7 @@ public class PosterFragment extends Fragment {
             final String NODE_RELEASE_DATE = "release_date";
             final String NODE_ORIGINAL_TITLE = "original_title";
             final String NODE_VOTE_AVERAGE = "vote_average";
+            final String NODE_ID = "id";
 
             JSONObject forecastJson = new JSONObject(moviesJsonStr);
             JSONArray movieArray = forecastJson.getJSONArray(NODE_RESULTS);
@@ -236,6 +236,7 @@ public class PosterFragment extends Fragment {
                 String releaseDate;
                 String title;
                 double rating;
+                String id;
 
                 JSONObject movieObj = movieArray.getJSONObject(i);
                 posterPath = movieObj.getString(NODE_POSTER_PATH);
@@ -243,8 +244,9 @@ public class PosterFragment extends Fragment {
                 releaseDate = movieObj.getString(NODE_RELEASE_DATE);
                 title = movieObj.getString(NODE_ORIGINAL_TITLE);
                 rating = movieObj.getDouble(NODE_VOTE_AVERAGE);
+                id = movieObj.getString(NODE_ID);
 
-                Movie movie = new Movie(title, posterPath, overview, rating, releaseDate);
+                Movie movie = new Movie(title, posterPath, overview, rating, releaseDate, id);
 
                 resultList.add(movie);
             }
