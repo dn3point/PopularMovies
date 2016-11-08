@@ -33,14 +33,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (savedInstanceState == null) {
-            ButterKnife.bind(this);
-            setSupportActionBar(mToolbar);
-            setupViewPager(mViewPager);
-            mTabLayout.setupWithViewPager(mViewPager);
-        }
-
-
+        ButterKnife.bind(this);
+        setSupportActionBar(mToolbar);
+        setupViewPager(mViewPager);
+        mTabLayout.setupWithViewPager(mViewPager);
     }
 
     @Override
@@ -64,9 +60,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(new PosterFragment(), "ONE");
-        adapter.addFragment(new PosterFragment(), "TWO");
-        adapter.addFragment(new PosterFragment(), "THREE");
+        adapter.addFragment(
+                PosterFragment.newIntance(getString(R.string.pref_sort_by_popular)),
+                getString(R.string.pref_sort_by_popular_label));
+        adapter.addFragment(
+                PosterFragment.newIntance(getString(R.string.pref_sort_by_top_rated)),
+                getString(R.string.pref_sort_by_top_rated_label));
+        adapter.addFragment(
+                PosterFragment.newIntance(getString(R.string.pref_sort_by_favourite)),
+                getString(R.string.pref_sort_by_favourite_label));
         viewPager.setAdapter(adapter);
     }
 

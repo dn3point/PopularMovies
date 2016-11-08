@@ -47,6 +47,8 @@ import java.util.List;
 public class PosterFragment extends Fragment {
     private static final String LOG_TAG = PosterFragment.class.getSimpleName();
 
+    private static final String SORT_BY_KEY = "sort_by";
+
     private MovieAdapter mImageAdapter;
     private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
         @Override
@@ -59,6 +61,16 @@ public class PosterFragment extends Fragment {
     };
 
     public PosterFragment() {
+    }
+
+    public static PosterFragment newIntance(String sortBy) {
+        PosterFragment fragment = new PosterFragment();
+
+        Bundle args = new Bundle();
+        args.putString(SORT_BY_KEY, sortBy);
+        fragment.setArguments(args);
+
+        return  fragment;
     }
 
     @Override
@@ -108,8 +120,13 @@ public class PosterFragment extends Fragment {
     }
 
     private void updatePosters() {
-        FetchMovieTask task = new FetchMovieTask();
-        task.execute();
+        if (getString(R.string.pref_sort_by_favourite)
+                .equals(getArguments().getString(SORT_BY_KEY))) {
+            // TODO Fetch favourite movies from DB
+        } else {
+            FetchMovieTask task = new FetchMovieTask();
+            task.execute();
+        }
     }
 
     public class FetchMovieTask extends AsyncTask<Void, Void, List<Movie>> {
@@ -124,8 +141,8 @@ public class PosterFragment extends Fragment {
 
             // Will contain the raw JSON response as a string.
             String moviesJsonStr = null;
-            String sortBy = getSortBy();
-
+            // String sortBy = getSortBy();
+            String sortBy = getArguments().getString(getString(R.string.pref_sort_by_key));
             try {
                 final String MOVIE_BASE_URL =
                         "https://api.themoviedb.org/3/movie/";

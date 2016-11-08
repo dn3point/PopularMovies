@@ -11,14 +11,12 @@
     <string name="pref_sort_by_label">Sort by</string>
     <string name="pref_sort_by_popular_label">Most Popular</string>
     <string name="pref_sort_by_top_rated_label">Highest Rated</string>
+    <string name="pref_sort_by_favourite_label">Favourite</string>
     <string name="pref_sort_by_key">sort_by</string>
     <string name="pref_sort_by_popular">popular</string>
     <string name="pref_sort_by_top_rated">top_rated</string>
+    <string name="pref_sort_by_favourite">favourite</string>
 
     <!-- Intent -->
     <string name="intent_movie_obj_tag">movie_obj</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-
 </resources>
