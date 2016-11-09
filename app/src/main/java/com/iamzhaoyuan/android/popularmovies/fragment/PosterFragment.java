@@ -63,7 +63,7 @@ public class PosterFragment extends Fragment {
     public PosterFragment() {
     }
 
-    public static PosterFragment newIntance(String sortBy) {
+    public static PosterFragment newInstance(String sortBy) {
         PosterFragment fragment = new PosterFragment();
 
         Bundle args = new Bundle();
@@ -226,8 +226,8 @@ public class PosterFragment extends Fragment {
         @Override
         protected void onPostExecute(List<Movie> movies) {
             if (movies != null) {
-                mImageAdapter.clear();
-                mImageAdapter.addAll(movies);
+                mImageAdapter.clearMovies();
+                mImageAdapter.addMovies(movies);
             }
         }
 

@@ -116,4 +116,20 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MyViewHolder
     public int getItemCount() {
         return mMovieList.size();
     }
+
+    public void clearMovies() {
+        int size = mMovieList.size();
+        if (size > 0) {
+            for (int i = 0; i < size; i++) {
+                mMovieList.remove(0);
+            }
+
+            this.notifyItemRangeRemoved(0, size);
+        }
+    }
+
+    public void addMovies(List<Movie> applications) {
+        mMovieList.addAll(applications);
+        this.notifyItemRangeInserted(0, applications.size() - 1);
+    }
 }
