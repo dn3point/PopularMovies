@@ -21,7 +21,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/movie_title"
                 android:background="@color/colorPrimary"
-                android:textColor="@color/textColorPrimary"
+                android:textColor="@color/movie_title"
                 android:paddingLeft="@dimen/movie_title_padding_right"
                 android:paddingRight="@dimen/movie_title_padding_right"
                 android:paddingTop="@dimen/movie_title_padding_top"

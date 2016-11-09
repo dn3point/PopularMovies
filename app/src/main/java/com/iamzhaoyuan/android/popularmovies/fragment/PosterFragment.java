@@ -6,13 +6,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Rect;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,14 +46,18 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 
 /**
  * A simple {@link Fragment} subclass.
  */
 public class PosterFragment extends Fragment {
     private static final String LOG_TAG = PosterFragment.class.getSimpleName();
-
     private static final String SORT_BY_KEY = "sort_by";
+
+    @BindView(R.id.recycler_view) RecyclerView mRecyclerView;
 
     private MovieAdapter mImageAdapter;
     private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
@@ -100,21 +110,26 @@ public class PosterFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_poster, container, false);
+        ButterKnife.bind(this, rootView);
 
         mImageAdapter = new MovieAdapter(getActivity(), new ArrayList<Movie>());
-
-        GridView gridView = (GridView) rootView.findViewById(R.id.poster_gridview);
-        gridView.setAdapter(mImageAdapter);
-        gridView.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(getActivity(), DetailsActivity.class);
-                intent.putExtra(
-                        getString(R.string.intent_movie_obj_tag),
-                        mImageAdapter.getItem(position));
-                startActivity(intent);
-            }
-        });
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(), 2);
+        mRecyclerView.setLayoutManager(layoutManager);
+        mRecyclerView.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(10), true));
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.setAdapter(mImageAdapter);
+//        GridView gridView = (GridView) rootView.findViewById(R.id.poster_gridview);
+//        gridView.setAdapter(mImageAdapter);
+//        gridView.setOnItemClickListener(new OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+//                Intent intent = new Intent(getActivity(), DetailsActivity.class);
+//                intent.putExtra(
+//                        getString(R.string.intent_movie_obj_tag),
+//                        mImageAdapter.getItem(position));
+//                startActivity(intent);
+//            }
+//        });
 
         return rootView;
     }
@@ -270,6 +285,52 @@ public class PosterFragment extends Fragment {
 
             return resultList;
         }
+    }
+
+    /**
+     * RecyclerView item decoration - give equal margin around grid item
+     */
+    public class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
+
+        private int spanCount;
+        private int spacing;
+        private boolean includeEdge;
+
+        public GridSpacingItemDecoration(int spanCount, int spacing, boolean includeEdge) {
+            this.spanCount = spanCount;
+            this.spacing = spacing;
+            this.includeEdge = includeEdge;
+        }
+
+        @Override
+        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            int position = parent.getChildAdapterPosition(view); // item position
+            int column = position % spanCount; // item column
+
+            if (includeEdge) {
+                outRect.left = spacing - column * spacing / spanCount; // spacing - column * ((1f / spanCount) * spacing)
+                outRect.right = (column + 1) * spacing / spanCount; // (column + 1) * ((1f / spanCount) * spacing)
+
+                if (position < spanCount) { // top edge
+                    outRect.top = spacing;
+                }
+                outRect.bottom = spacing; // item bottom
+            } else {
+                outRect.left = column * spacing / spanCount; // column * ((1f / spanCount) * spacing)
+                outRect.right = spacing - (column + 1) * spacing / spanCount; // spacing - (column + 1) * ((1f /    spanCount) * spacing)
+                if (position >= spanCount) {
+                    outRect.top = spacing; // item top
+                }
+            }
+        }
+    }
+
+    /**
+     * Converting dp to pixel
+     */
+    private int dpToPx(int dp) {
+        Resources r = getResources();
+        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
     }
 
 }
