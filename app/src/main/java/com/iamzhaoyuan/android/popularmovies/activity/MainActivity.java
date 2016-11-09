@@ -61,13 +61,13 @@ public class MainActivity extends AppCompatActivity {
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFragment(
-                PosterFragment.newIntance(getString(R.string.pref_sort_by_popular)),
+                PosterFragment.newInstance(getString(R.string.pref_sort_by_popular)),
                 getString(R.string.pref_sort_by_popular_label));
         adapter.addFragment(
-                PosterFragment.newIntance(getString(R.string.pref_sort_by_top_rated)),
+                PosterFragment.newInstance(getString(R.string.pref_sort_by_top_rated)),
                 getString(R.string.pref_sort_by_top_rated_label));
         adapter.addFragment(
-                PosterFragment.newIntance(getString(R.string.pref_sort_by_favourite)),
+                PosterFragment.newInstance(getString(R.string.pref_sort_by_favourite)),
                 getString(R.string.pref_sort_by_favourite_label));
         viewPager.setAdapter(adapter);
     }

@@ -19,4 +19,10 @@
 
     <!-- Intent -->
     <string name="intent_movie_obj_tag">movie_obj</string>
+
+    <!-- TODO remove -->
+    <string name="action_add_favourite">Add to Favourites</string>
+    <string name="action_play_next">Play Next</string>
+    <string name="backdrop_title">LOVE MUSIC</string>
+    <string name="backdrop_subtitle">This season top 20 albums</string>
 </resources>
