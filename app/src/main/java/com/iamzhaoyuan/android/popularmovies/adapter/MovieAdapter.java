@@ -9,7 +9,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,8 +34,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MyViewHolder
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.title) TextView title;
-        @BindView(R.id.count) TextView rate;
-        @BindView(R.id.thumbnail) ImageView poster;
+        @BindView(R.id.poster) ImageView poster;
         @BindView(R.id.overflow) ImageView overflow;
 
         public MyViewHolder(View itemView) {
@@ -53,7 +51,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MyViewHolder
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.album_card, parent, false);
+                .inflate(R.layout.poster_card, parent, false);
 
         return new MyViewHolder(itemView);
     }
@@ -62,7 +60,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MyViewHolder
     public void onBindViewHolder(final MyViewHolder holder, int position) {
         Movie movie = mMovieList.get(position);
         holder.title.setText(movie.getTitle());
-        holder.rate.setText(movie.getRating() + "/5.0");
 
         // loading movie cover using Picasso library
         Picasso.with(mContext)
