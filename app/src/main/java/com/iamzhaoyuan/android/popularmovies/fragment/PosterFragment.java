@@ -22,13 +22,9 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.GridView;
 
 import com.iamzhaoyuan.android.popularmovies.BuildConfig;
 import com.iamzhaoyuan.android.popularmovies.R;
-import com.iamzhaoyuan.android.popularmovies.activity.DetailsActivity;
 import com.iamzhaoyuan.android.popularmovies.adapter.MovieAdapter;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
 import com.iamzhaoyuan.android.popularmovies.util.NetworkUtil;
@@ -115,21 +111,9 @@ public class PosterFragment extends Fragment {
         mImageAdapter = new MovieAdapter(getActivity(), new ArrayList<Movie>());
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(), 2);
         mRecyclerView.setLayoutManager(layoutManager);
-        mRecyclerView.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(10), true));
+        mRecyclerView.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(5), true));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mImageAdapter);
-//        GridView gridView = (GridView) rootView.findViewById(R.id.poster_gridview);
-//        gridView.setAdapter(mImageAdapter);
-//        gridView.setOnItemClickListener(new OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                Intent intent = new Intent(getActivity(), DetailsActivity.class);
-//                intent.putExtra(
-//                        getString(R.string.intent_movie_obj_tag),
-//                        mImageAdapter.getItem(position));
-//                startActivity(intent);
-//            }
-//        });
 
         return rootView;
     }
@@ -263,22 +247,24 @@ public class PosterFragment extends Fragment {
             List<Movie> resultList = new ArrayList<>();
 
             for (int i = 0; i < movieArray.length(); i++) {
-                String posterPath;
-                String overview;
-                String releaseDate;
-                String title;
-                double rating;
-                String id;
-
                 JSONObject movieObj = movieArray.getJSONObject(i);
-                posterPath = movieObj.getString(NODE_POSTER_PATH);
-                overview = movieObj.getString(NODE_OVERVIEW);
-                releaseDate = movieObj.getString(NODE_RELEASE_DATE);
-                title = movieObj.getString(NODE_ORIGINAL_TITLE);
-                rating = movieObj.getDouble(NODE_VOTE_AVERAGE);
-                id = movieObj.getString(NODE_ID);
+                String posterPath = movieObj.getString(NODE_POSTER_PATH);
+                String overview = movieObj.getString(NODE_OVERVIEW);
+                String releaseDate = movieObj.getString(NODE_RELEASE_DATE);
+                String title = movieObj.getString(NODE_ORIGINAL_TITLE);
+                double rating = movieObj.getDouble(NODE_VOTE_AVERAGE);
+                String id = movieObj.getString(NODE_ID);
+                boolean isFavourite = false; // TODO should get from DB
 
-                Movie movie = new Movie(title, posterPath, overview, rating, releaseDate, id);
+
+                Movie movie = new Movie(
+                        title,
+                        posterPath,
+                        overview,
+                        rating,
+                        releaseDate,
+                        id,
+                        isFavourite);
 
                 resultList.add(movie);
             }

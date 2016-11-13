@@ -25,28 +25,34 @@
                 android:scaleType="centerCrop"
                 android:adjustViewBounds="true" />
 
-            <TextView
-                android:id="@+id/title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/poster"
-                android:paddingLeft="@dimen/album_title_padding"
-                android:paddingRight="@dimen/album_title_padding"
-                android:paddingTop="@dimen/album_title_padding"
-                android:textColor="@color/movie_title"
-                android:textSize="@dimen/album_title"
-                android:ellipsize="end"
-                android:maxLines="1"/>
-
             <ImageView
-                android:id="@+id/overflow"
+                android:id="@+id/favourite"
                 android:layout_width="@dimen/ic_album_overflow_width"
                 android:layout_height="@dimen/ic_album_overflow_height"
                 android:layout_alignParentRight="true"
                 android:layout_below="@id/poster"
                 android:layout_marginTop="@dimen/ic_album_overflow_margin_top"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_dots" />
+                android:layout_marginRight="@dimen/ic_album_overflow_margin_top"
+                android:layout_marginBottom="@dimen/ic_album_overflow_margin_top"
+                android:gravity="right"
+                android:scaleType="centerInside" />
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_below="@id/poster"
+                android:paddingLeft="@dimen/album_title_padding"
+                android:paddingRight="@dimen/album_title_padding"
+                android:layout_alignParentLeft="true"
+                android:gravity="center_vertical"
+                android:layout_toLeftOf="@id/favourite"
+                android:textColor="@color/movie_title"
+                android:textSize="@dimen/album_title"
+                android:textStyle="bold"
+                android:ellipsize="end"
+                android:maxLines="1"/>
+
 
         </RelativeLayout>
 

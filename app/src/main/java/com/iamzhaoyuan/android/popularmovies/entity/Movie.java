@@ -13,19 +13,22 @@ public class Movie implements Parcelable {
     private double mRating;
     private String mReleaseDate;
     private String mId;
+    private boolean mIsFavourite;
 
     public Movie(String title,
                  String imageThumbnail,
                  String overview,
                  double rating,
                  String releaseDate,
-                 String id) {
+                 String id,
+                 boolean isFavourite) {
         mTitle = title;
         mImageThumbnail = imageThumbnail;
         mOverview = overview;
         mRating = rating;
         mReleaseDate = releaseDate;
         mId = id;
+        mIsFavourite = isFavourite;
     }
 
     private Movie(Parcel in) {
@@ -35,6 +38,7 @@ public class Movie implements Parcelable {
         mRating = in.readDouble();
         mReleaseDate = in.readString();
         mId = in.readString();
+        mIsFavourite = in.readByte() != 0;
     }
 
     @Override
@@ -50,6 +54,7 @@ public class Movie implements Parcelable {
         dest.writeDouble(mRating);
         dest.writeString(mReleaseDate);
         dest.writeString(mId);
+        dest.writeByte((byte)(mIsFavourite ? 1 : 0));
     }
 
     public static final Parcelable.Creator<Movie> CREATOR =
@@ -114,5 +119,13 @@ public class Movie implements Parcelable {
 
     public void setId(String id) {
         mId = id;
+    }
+
+    public boolean isFavourite() {
+        return mIsFavourite;
+    }
+
+    public void setFavourite(boolean favourite) {
+        mIsFavourite = favourite;
     }
 }
