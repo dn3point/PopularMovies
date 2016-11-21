@@ -14,6 +14,7 @@ public class Movie implements Parcelable {
     private String mReleaseDate;
     private String mId;
     private boolean mIsFavourite;
+    private String mBackdrop;
 
     public Movie(String title,
                  String imageThumbnail,
@@ -21,7 +22,8 @@ public class Movie implements Parcelable {
                  double rating,
                  String releaseDate,
                  String id,
-                 boolean isFavourite) {
+                 boolean isFavourite,
+                 String backdrop) {
         mTitle = title;
         mImageThumbnail = imageThumbnail;
         mOverview = overview;
@@ -29,6 +31,7 @@ public class Movie implements Parcelable {
         mReleaseDate = releaseDate;
         mId = id;
         mIsFavourite = isFavourite;
+        mBackdrop = backdrop;
     }
 
     private Movie(Parcel in) {
@@ -39,6 +42,7 @@ public class Movie implements Parcelable {
         mReleaseDate = in.readString();
         mId = in.readString();
         mIsFavourite = in.readByte() != 0;
+        mBackdrop = in.readString();
     }
 
     @Override
@@ -55,6 +59,7 @@ public class Movie implements Parcelable {
         dest.writeString(mReleaseDate);
         dest.writeString(mId);
         dest.writeByte((byte)(mIsFavourite ? 1 : 0));
+        dest.writeString(mBackdrop);
     }
 
     public static final Parcelable.Creator<Movie> CREATOR =
@@ -127,5 +132,13 @@ public class Movie implements Parcelable {
 
     public void setFavourite(boolean favourite) {
         mIsFavourite = favourite;
+    }
+
+    public String getBackdrop() {
+        return mBackdrop;
+    }
+
+    public void setBackdrop(String backdrop) {
+        mBackdrop = backdrop;
     }
 }

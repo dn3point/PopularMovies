@@ -240,6 +240,7 @@ public class PosterFragment extends Fragment {
             final String NODE_ORIGINAL_TITLE = "original_title";
             final String NODE_VOTE_AVERAGE = "vote_average";
             final String NODE_ID = "id";
+            final String NODE_BACKDROP = "backdrop_path";
 
             JSONObject forecastJson = new JSONObject(moviesJsonStr);
             JSONArray movieArray = forecastJson.getJSONArray(NODE_RESULTS);
@@ -255,7 +256,7 @@ public class PosterFragment extends Fragment {
                 double rating = movieObj.getDouble(NODE_VOTE_AVERAGE);
                 String id = movieObj.getString(NODE_ID);
                 boolean isFavourite = false; // TODO should get from DB
-
+                String backdrop = movieObj.getString(NODE_BACKDROP);
 
                 Movie movie = new Movie(
                         title,
@@ -264,7 +265,8 @@ public class PosterFragment extends Fragment {
                         rating,
                         releaseDate,
                         id,
-                        isFavourite);
+                        isFavourite,
+                        backdrop);
 
                 resultList.add(movie);
             }

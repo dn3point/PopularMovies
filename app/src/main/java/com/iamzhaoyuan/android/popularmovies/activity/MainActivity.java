@@ -37,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(mToolbar);
         setupViewPager(mViewPager);
         mTabLayout.setupWithViewPager(mViewPager);
-
     }
 
     @Override
