@@ -32,10 +32,6 @@ public class DetailsFragment extends Fragment {
     @BindView(R.id.movie_rating) TextView mRatingTextView;
     @BindView(R.id.movie_overview) TextView mOverviewTextView;
 
-    @OnClick(R.id.fav_btn) void switchFavMovie() {
-
-    }
-
     public DetailsFragment() {
     }
 

@@ -14,6 +14,7 @@ import android.widget.ImageView;
 
 import com.iamzhaoyuan.android.popularmovies.R;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
+import com.iamzhaoyuan.android.popularmovies.fragment.DetailsFragment;
 import com.iamzhaoyuan.android.popularmovies.util.MovieUtil;
 import com.squareup.picasso.Picasso;
 
@@ -42,37 +43,44 @@ public class DetailsActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
-        if (intent != null) {
-            mMovie = intent.getExtras().
-                    getParcelable(getString(R.string.intent_movie_obj_tag));
-            Picasso.with(this)
-                    .load(MovieUtil.getInstance().getBackdropUrl(mMovie.getBackdrop()))
-                    .into(mImageView);
-            mCollapsingToolbarLayout.setTitle(mMovie.getTitle());
-            if (mMovie.isFavourite()) {
-                mFloatingActionButton.setImageDrawable(getDrawable(R.drawable.fav_white));
-            } else {
-                mFloatingActionButton.setImageDrawable(getDrawable(R.drawable.ol_white));
-            }
-            mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mMovie.isFavourite()) {
-                        ((FloatingActionButton) v).setImageDrawable(getDrawable(R.drawable.ol_white));
-                        Snackbar.make(v, "Remove from favourite", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-                        mMovie.setFavourite(false);
-                    } else {
-                        ((FloatingActionButton) v).setImageDrawable(getDrawable(R.drawable.fav_white));
-                        Snackbar.make(v, "Add to favourite", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
-                        mMovie.setFavourite(true);
-                    }
-                    // TODO update database
-                }
-            });
-        } else {
+        if (intent == null) {
             Log.d(LOG_TAG, "Intent from MainActivity is null?");
+            return;
+        }
+
+        mMovie = intent.getExtras().
+                getParcelable(getString(R.string.intent_movie_obj_tag));
+        Picasso.with(this)
+                .load(MovieUtil.getInstance().getBackdropUrl(mMovie.getBackdrop()))
+                .into(mImageView);
+        mCollapsingToolbarLayout.setTitle(mMovie.getTitle());
+        if (mMovie.isFavourite()) {
+            mFloatingActionButton.setImageDrawable(getDrawable(R.drawable.fav_white));
+        } else {
+            mFloatingActionButton.setImageDrawable(getDrawable(R.drawable.ol_white));
+        }
+        mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mMovie.isFavourite()) {
+                    ((FloatingActionButton) v).setImageDrawable(getDrawable(R.drawable.ol_white));
+                    Snackbar.make(v, "Remove from favourite", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    mMovie.setFavourite(false);
+                } else {
+                    ((FloatingActionButton) v).setImageDrawable(getDrawable(R.drawable.fav_white));
+                    Snackbar.make(v, "Add to favourite", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    mMovie.setFavourite(true);
+                }
+                // TODO update database
+            }
+        });
+
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.detail_container, new DetailsFragment())
+                    .commit();
         }
     }
 
