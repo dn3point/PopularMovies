@@ -27,7 +27,6 @@ public class DetailsFragment extends Fragment {
     private static final String LOG_TAG = DetailsFragment.class.getSimpleName();
 
     @BindView(R.id.movie_title) TextView mTitleTextView;
-    @BindView(R.id.movie_poster) ImageView mPosterImageView;
     @BindView(R.id.movie_release_date) TextView mReleaseDateTextView;
     @BindView(R.id.movie_rating) TextView mRatingTextView;
     @BindView(R.id.movie_overview) TextView mOverviewTextView;
@@ -53,17 +52,17 @@ public class DetailsFragment extends Fragment {
 
         if (movie != null) {
             ButterKnife.bind(this, rootView);
-            // Set contents
-            final String RATING_SUFFIX = "/10";
+            // Set contents\
             MovieUtil movieUtil = MovieUtil.getInstance();
             String posterUrl = movieUtil.getPosterUrl(movie.getImageThumbnail());
 
             mTitleTextView.setText(movie.getTitle());
-            mReleaseDateTextView.setText(movie.getReleaseDate().substring(0, 4));
-            mRatingTextView.setText(movie.getRating() + RATING_SUFFIX);
+            mReleaseDateTextView.setText(
+                    getActivity().getString(R.string.movie_released_date_prefix) +
+                            movie.getReleaseDate());
+            mRatingTextView.setText(
+                    getActivity().getString(R.string.movie_rating_prefix) + movie.getRating());
             mOverviewTextView.setText(movie.getOverview());
-            Picasso.with(getContext()).load(posterUrl).into(mPosterImageView);
-
         } else {
             Log.d(LOG_TAG, "Movie obj passed from MainActivity is null?");
         }

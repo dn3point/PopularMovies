@@ -1,14 +1,17 @@
 package com.iamzhaoyuan.android.popularmovies.activity;
 
 import android.content.Intent;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -48,17 +51,27 @@ public class DetailsActivity extends AppCompatActivity {
             return;
         }
 
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams)mAppBarLayout.getLayoutParams();
+        lp.height = size.y >> 1;
+
         mMovie = intent.getExtras().
                 getParcelable(getString(R.string.intent_movie_obj_tag));
+
         Picasso.with(this)
                 .load(MovieUtil.getInstance().getBackdropUrl(mMovie.getBackdrop()))
                 .into(mImageView);
-        mCollapsingToolbarLayout.setTitle(mMovie.getTitle());
+
+        mCollapsingToolbarLayout.setTitle(" ");
+
         if (mMovie.isFavourite()) {
             mFloatingActionButton.setImageDrawable(getDrawable(R.drawable.fav_white));
         } else {
             mFloatingActionButton.setImageDrawable(getDrawable(R.drawable.ol_white));
         }
+
         mFloatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
