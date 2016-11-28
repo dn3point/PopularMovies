@@ -7,6 +7,7 @@ import android.net.Uri;
  */
 public class MovieUtil {
     private static final String THEMOVIEDB_BASE_URL = "http://image.tmdb.org/t/p";
+    private static final String YOUTUBE_BASE_URL = "https://www.youtube.com/watch?v=";
     private static MovieUtil instance = null;
 
     private MovieUtil() {
@@ -33,5 +34,9 @@ public class MovieUtil {
                 .build();
 
         return builtUri.toString();
+    }
+
+    public String getTrailerUrl(String key) {
+        return YOUTUBE_BASE_URL + key;
     }
 }
