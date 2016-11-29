@@ -146,8 +146,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MyViewHolder
             for (int i = 0; i < size; i++) {
                 mMovieList.remove(0);
             }
-
-            this.notifyItemRangeRemoved(0, size);
+            notifyItemRangeRemoved(0, size);
         }
     }
 
