@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.iamzhaoyuan.android.popularmovies.R;
 import com.iamzhaoyuan.android.popularmovies.util.MovieUtil;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -36,9 +37,9 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MyViewHo
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        String trailerUrl = mTrailerList.get(position);
-        Bitmap thumbnail = MovieUtil.getInstance().retrieveVideoFrameFromVideo(trailerUrl);
-        holder.thumbnail.setImageBitmap(thumbnail);
+        String trailerKey = mTrailerList.get(position);
+        String thumbnail = MovieUtil.getInstance().getTrailerThumbnail(trailerKey);
+        Picasso.with(mContext).load(thumbnail).into(holder.thumbnail);
 
         holder.thumbnail.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -79,8 +80,8 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MyViewHo
             Display display = wm.getDefaultDisplay();
             Point size = new Point();
             display.getSize(size);
-            thumbnail.getLayoutParams().width = size.y / 3;
-            thumbnail.getLayoutParams().height = size.y * 3 / 16;
+            thumbnail.getLayoutParams().width = size.x >> 1;
+            thumbnail.getLayoutParams().height = size.x / 3;
         }
 
     }

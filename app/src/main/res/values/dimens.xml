@@ -27,5 +27,9 @@
     <dimen name="movie_release_date_text_size">15sp</dimen>
     <dimen name="movie_rating_text_size">15sp</dimen>
     <dimen name="movie_overview_text_size">15sp</dimen>
+    <dimen name="movie_trailer_title_text_size">18sp</dimen>
+    <dimen name="movie_review_title_text_size">18sp</dimen>
+    <dimen name="movie_review_author_text_size">16sp</dimen>
+    <dimen name="movie_review_text_size">15sp</dimen>
 
 </resources>

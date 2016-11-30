@@ -18,6 +18,8 @@ public class MovieUtil {
 
     private static final String THEMOVIEDB_BASE_URL = "http://image.tmdb.org/t/p";
     private static final String YOUTUBE_BASE_URL = "https://www.youtube.com/watch?v=";
+    private static final String THUMBNAIL_PREFIX = "http://i3.ytimg.com/vi/";
+    private static final String THUMBNAIL_AFFIX = "/hqdefault.jpg";
     private static MovieUtil instance = null;
 
     private MovieUtil() {
@@ -50,26 +52,8 @@ public class MovieUtil {
         return YOUTUBE_BASE_URL + key;
     }
 
-    public Bitmap retrieveVideoFrameFromVideo(String videoPath) {
-        MediaMetadataRetriever mediaMetadataRetriever = null;
-        Bitmap bitmap = null;
-        try {
-            mediaMetadataRetriever = new MediaMetadataRetriever();
-            if (Build.VERSION.SDK_INT >= 14) {
-                mediaMetadataRetriever.setDataSource(videoPath, new HashMap<String, String>());
-            } else {
-                mediaMetadataRetriever.setDataSource(videoPath);
-            }
-            bitmap = mediaMetadataRetriever.getFrameAtTime();
-        } catch (Exception e) {
-            Log.d(LOG_TAG, e.getMessage());
-        } finally {
-            if (mediaMetadataRetriever != null) {
-                mediaMetadataRetriever.release();
-            }
-        }
-
-        return bitmap;
+    public String getTrailerThumbnail(String key) {
+        return new StringBuilder(THUMBNAIL_PREFIX).append(key).append(THUMBNAIL_AFFIX).toString();
     }
 
     public int dpToPx(Resources r, int dp) {

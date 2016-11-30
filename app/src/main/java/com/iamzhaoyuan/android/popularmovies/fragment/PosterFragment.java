@@ -213,19 +213,6 @@ public class PosterFragment extends Fragment {
             return null;
         }
 
-        /**
-         * Get sort by value from pref
-         * @return
-         */
-        private String getSortBy() {
-            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            String sortBy =
-                    pref.getString(
-                            getString(R.string.pref_sort_by_key),
-                            getString(R.string.pref_sort_by_popular));
-            return sortBy;
-        }
-
         @Override
         protected void onPostExecute(List<Movie> movies) {
             if (movies != null) {
