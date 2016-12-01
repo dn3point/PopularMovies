@@ -12,6 +12,7 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -27,6 +28,9 @@ import com.iamzhaoyuan.android.popularmovies.BuildConfig;
 import com.iamzhaoyuan.android.popularmovies.R;
 import com.iamzhaoyuan.android.popularmovies.adapter.MovieAdapter;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
+import com.iamzhaoyuan.android.popularmovies.listener.OnLoadMoreListener;
+import com.iamzhaoyuan.android.popularmovies.util.GridSpacingItemDecoration;
+import com.iamzhaoyuan.android.popularmovies.util.MovieUtil;
 import com.iamzhaoyuan.android.popularmovies.util.NetworkUtil;
 
 import org.json.JSONArray;
@@ -52,7 +56,7 @@ import butterknife.ButterKnife;
 public class PosterFragment extends Fragment {
     private static final String LOG_TAG = PosterFragment.class.getSimpleName();
     private static final String SORT_BY_KEY = "sort_by";
-
+    private int page = 1;
     @BindView(R.id.recycler_view) RecyclerView mRecyclerView;
 
     private MovieAdapter mImageAdapter;
@@ -110,10 +114,58 @@ public class PosterFragment extends Fragment {
 
         mImageAdapter = new MovieAdapter(getActivity(), new ArrayList<Movie>());
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(), 2);
-        mRecyclerView.setLayoutManager(layoutManager);
-        mRecyclerView.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(5), true));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mImageAdapter);
+
+        mImageAdapter.setOnLoadMoreListener(new OnLoadMoreListener() {
+            @Override
+            public void onLoadMore() {
+                Log.i(LOG_TAG, "Load more");
+                mImageAdapter.add(null);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.i(LOG_TAG, "Load more in thread");
+                        updatePosters();
+                        mImageAdapter.setLoading(false);
+                    }
+                }, 5000);
+            }
+        });
+
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                GridLayoutManager gridLayoutManager = (GridLayoutManager)recyclerView.getLayoutManager();
+                MovieAdapter movieAdapter = (MovieAdapter)recyclerView.getAdapter();
+                movieAdapter.setTotalItemCount(gridLayoutManager.getItemCount());
+                movieAdapter.setLastVisibleItem(gridLayoutManager.findLastVisibleItemPosition());
+
+                if (!movieAdapter.isLoading() &&
+                        movieAdapter.getTotalItemCount() <= (movieAdapter.getLastVisibleItem() + movieAdapter.getVisibleThreshold())) {
+                    if (movieAdapter.getOnLoadMoreListener() != null) {
+                        movieAdapter.getOnLoadMoreListener().onLoadMore();
+                    }
+                    movieAdapter.setLoading(true);
+                }
+            }
+        });
+
+        mRecyclerView.setLayoutManager(layoutManager);
+        ((GridLayoutManager)layoutManager).setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                switch(mImageAdapter.getItemViewType(position)){
+                    case MovieAdapter.VIEW_TYPE_LOADING:
+                        return 2;
+                    case MovieAdapter.VIEW_TYPE_POSTER:
+                        return 1;
+                    default:
+                        return -1;
+                }
+            }
+        });
 
         return rootView;
     }
@@ -123,16 +175,16 @@ public class PosterFragment extends Fragment {
                 .equals(getArguments().getString(SORT_BY_KEY))) {
             // TODO Fetch favourite movies from DB
         } else {
-            FetchMovieTask task = new FetchMovieTask();
-            task.execute();
+            new FetchMovieTask().execute(page);
+            page++;
         }
     }
 
-    public class FetchMovieTask extends AsyncTask<Void, Void, List<Movie>> {
+    public class FetchMovieTask extends AsyncTask<Integer, Void, List<Movie>> {
         private final String LOG_TAG = FetchMovieTask.class.getSimpleName();
 
         @Override
-        protected List<Movie> doInBackground(Void... params) {
+        protected List<Movie> doInBackground(Integer... params) {
             // These two need to be declared outside the try/catch
             // so that they can be closed in the finally block.
             HttpURLConnection urlConnection = null;
@@ -142,13 +194,16 @@ public class PosterFragment extends Fragment {
             String moviesJsonStr = null;
             // String sortBy = getSortBy();
             String sortBy = getArguments().getString(getString(R.string.pref_sort_by_key));
+            int page = params[0];
             try {
                 final String MOVIE_BASE_URL =
                         "https://api.themoviedb.org/3/movie/";
                 final String APIKEY_PARAM = "api_key";
+                final String PG_PARAM = "page";
 
                 Uri builtUri = Uri.parse(MOVIE_BASE_URL).buildUpon()
                         .appendPath(sortBy)
+                        .appendQueryParameter(PG_PARAM, page + "")
                         .appendQueryParameter(APIKEY_PARAM, BuildConfig.THEMOVIEDB_API_KEY)
                         .build();
 
@@ -209,23 +264,12 @@ public class PosterFragment extends Fragment {
             return null;
         }
 
-        /**
-         * Get sort by value from pref
-         * @return
-         */
-        private String getSortBy() {
-            SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            String sortBy =
-                    pref.getString(
-                            getString(R.string.pref_sort_by_key),
-                            getString(R.string.pref_sort_by_popular));
-            return sortBy;
-        }
-
         @Override
         protected void onPostExecute(List<Movie> movies) {
             if (movies != null) {
-                mImageAdapter.clearMovies();
+                if (mImageAdapter.isLastItemNull()) {
+                    mImageAdapter.remove();
+                }
                 mImageAdapter.addMovies(movies);
             }
         }
@@ -274,51 +318,4 @@ public class PosterFragment extends Fragment {
             return resultList;
         }
     }
-
-    /**
-     * RecyclerView item decoration - give equal margin around grid item
-     */
-    public class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
-
-        private int spanCount;
-        private int spacing;
-        private boolean includeEdge;
-
-        public GridSpacingItemDecoration(int spanCount, int spacing, boolean includeEdge) {
-            this.spanCount = spanCount;
-            this.spacing = spacing;
-            this.includeEdge = includeEdge;
-        }
-
-        @Override
-        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-            int position = parent.getChildAdapterPosition(view); // item position
-            int column = position % spanCount; // item column
-
-            if (includeEdge) {
-                outRect.left = spacing - column * spacing / spanCount; // spacing - column * ((1f / spanCount) * spacing)
-                outRect.right = (column + 1) * spacing / spanCount; // (column + 1) * ((1f / spanCount) * spacing)
-
-                if (position < spanCount) { // top edge
-                    outRect.top = spacing;
-                }
-                outRect.bottom = spacing; // item bottom
-            } else {
-                outRect.left = column * spacing / spanCount; // column * ((1f / spanCount) * spacing)
-                outRect.right = spacing - (column + 1) * spacing / spanCount; // spacing - (column + 1) * ((1f /    spanCount) * spacing)
-                if (position >= spanCount) {
-                    outRect.top = spacing; // item top
-                }
-            }
-        }
-    }
-
-    /**
-     * Converting dp to pixel
-     */
-    private int dpToPx(int dp) {
-        Resources r = getResources();
-        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
-    }
-
 }

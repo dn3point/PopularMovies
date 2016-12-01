@@ -23,4 +23,6 @@
     <!-- DetailFragment -->
     <string name="movie_released_date_prefix">Release Date :\u0020</string>
     <string name="movie_rating_prefix">Average rate :\u0020</string>
+    <string name="movie_trailer_title">Trailers</string>
+    <string name="movie_review_title">Reviews</string>
 </resources>
