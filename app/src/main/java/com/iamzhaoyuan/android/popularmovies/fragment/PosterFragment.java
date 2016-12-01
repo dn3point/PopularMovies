@@ -12,6 +12,7 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -27,6 +28,7 @@ import com.iamzhaoyuan.android.popularmovies.BuildConfig;
 import com.iamzhaoyuan.android.popularmovies.R;
 import com.iamzhaoyuan.android.popularmovies.adapter.MovieAdapter;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
+import com.iamzhaoyuan.android.popularmovies.listener.OnLoadMoreListener;
 import com.iamzhaoyuan.android.popularmovies.util.GridSpacingItemDecoration;
 import com.iamzhaoyuan.android.popularmovies.util.MovieUtil;
 import com.iamzhaoyuan.android.popularmovies.util.NetworkUtil;
@@ -54,7 +56,7 @@ import butterknife.ButterKnife;
 public class PosterFragment extends Fragment {
     private static final String LOG_TAG = PosterFragment.class.getSimpleName();
     private static final String SORT_BY_KEY = "sort_by";
-
+    private int page = 1;
     @BindView(R.id.recycler_view) RecyclerView mRecyclerView;
 
     private MovieAdapter mImageAdapter;
@@ -119,6 +121,41 @@ public class PosterFragment extends Fragment {
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mImageAdapter);
 
+        mImageAdapter.setOnLoadMoreListener(new OnLoadMoreListener() {
+            @Override
+            public void onLoadMore() {
+                Log.i(LOG_TAG, "Load more");
+                mImageAdapter.add(null);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.i(LOG_TAG, "Load more in thread");
+                        updatePosters();
+                        mImageAdapter.setLoading(false);
+                    }
+                }, 5000);
+            }
+        });
+
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                GridLayoutManager gridLayoutManager = (GridLayoutManager)recyclerView.getLayoutManager();
+                MovieAdapter movieAdapter = (MovieAdapter)recyclerView.getAdapter();
+                movieAdapter.setTotalItemCount(gridLayoutManager.getItemCount());
+                movieAdapter.setLastVisibleItem(gridLayoutManager.findLastVisibleItemPosition());
+
+                if (!movieAdapter.isLoading() &&
+                        movieAdapter.getTotalItemCount() <= (movieAdapter.getLastVisibleItem() + movieAdapter.getVisibleThreshold())) {
+                    if (movieAdapter.getOnLoadMoreListener() != null) {
+                        movieAdapter.getOnLoadMoreListener().onLoadMore();
+                    }
+                    movieAdapter.setLoading(true);
+                }
+            }
+        });
+
         return rootView;
     }
 
@@ -127,16 +164,16 @@ public class PosterFragment extends Fragment {
                 .equals(getArguments().getString(SORT_BY_KEY))) {
             // TODO Fetch favourite movies from DB
         } else {
-            FetchMovieTask task = new FetchMovieTask();
-            task.execute();
+            new FetchMovieTask().execute(page);
+            page++;
         }
     }
 
-    public class FetchMovieTask extends AsyncTask<Void, Void, List<Movie>> {
+    public class FetchMovieTask extends AsyncTask<Integer, Void, List<Movie>> {
         private final String LOG_TAG = FetchMovieTask.class.getSimpleName();
 
         @Override
-        protected List<Movie> doInBackground(Void... params) {
+        protected List<Movie> doInBackground(Integer... params) {
             // These two need to be declared outside the try/catch
             // so that they can be closed in the finally block.
             HttpURLConnection urlConnection = null;
@@ -146,13 +183,16 @@ public class PosterFragment extends Fragment {
             String moviesJsonStr = null;
             // String sortBy = getSortBy();
             String sortBy = getArguments().getString(getString(R.string.pref_sort_by_key));
+            int page = params[0];
             try {
                 final String MOVIE_BASE_URL =
                         "https://api.themoviedb.org/3/movie/";
                 final String APIKEY_PARAM = "api_key";
+                final String PG_PARAM = "page";
 
                 Uri builtUri = Uri.parse(MOVIE_BASE_URL).buildUpon()
                         .appendPath(sortBy)
+                        .appendQueryParameter(PG_PARAM, page + "")
                         .appendQueryParameter(APIKEY_PARAM, BuildConfig.THEMOVIEDB_API_KEY)
                         .build();
 
@@ -216,7 +256,9 @@ public class PosterFragment extends Fragment {
         @Override
         protected void onPostExecute(List<Movie> movies) {
             if (movies != null) {
-                mImageAdapter.clearMovies();
+                if (mImageAdapter.isLastItemNull()) {
+                    mImageAdapter.remove();
+                }
                 mImageAdapter.addMovies(movies);
             }
         }
