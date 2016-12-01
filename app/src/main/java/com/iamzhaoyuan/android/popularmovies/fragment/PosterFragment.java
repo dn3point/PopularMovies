@@ -114,10 +114,6 @@ public class PosterFragment extends Fragment {
 
         mImageAdapter = new MovieAdapter(getActivity(), new ArrayList<Movie>());
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(), 2);
-        mRecyclerView.setLayoutManager(layoutManager);
-        mRecyclerView.addItemDecoration(
-                new GridSpacingItemDecoration(
-                        2, MovieUtil.getInstance().dpToPx(getResources(), 5), true));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mImageAdapter);
 
@@ -152,6 +148,21 @@ public class PosterFragment extends Fragment {
                         movieAdapter.getOnLoadMoreListener().onLoadMore();
                     }
                     movieAdapter.setLoading(true);
+                }
+            }
+        });
+
+        mRecyclerView.setLayoutManager(layoutManager);
+        ((GridLayoutManager)layoutManager).setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                switch(mImageAdapter.getItemViewType(position)){
+                    case MovieAdapter.VIEW_TYPE_LOADING:
+                        return 2;
+                    case MovieAdapter.VIEW_TYPE_POSTER:
+                        return 1;
+                    default:
+                        return -1;
                 }
             }
         });

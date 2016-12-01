@@ -7,12 +7,15 @@ import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Point;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -36,8 +39,8 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private static final OvershootInterpolator OVERSHOOT_INTERPOLATOR =
             new OvershootInterpolator(4);
 
-    private final int VIEW_TYPE_POSTER = 0;
-    private final int VIEW_TYPE_LOADING = 1;
+    public static final int VIEW_TYPE_POSTER = 0;
+    public static final int VIEW_TYPE_LOADING = 1;
 
     private OnLoadMoreListener mOnLoadMoreListener;
 
@@ -245,6 +248,12 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         PosterViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
+
+            WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+            Display display = wm.getDefaultDisplay();
+            Point size = new Point();
+            display.getSize(size);
+            poster.getLayoutParams().height = (size.y << 1) / 5;
         }
 
     }
