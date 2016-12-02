@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import com.iamzhaoyuan.android.popularmovies.R;
 import com.iamzhaoyuan.android.popularmovies.entity.MovieReview;
+import com.ms.square.android.expandabletextview.ExpandableTextView;
 
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class MovieReviewAdapter extends RecyclerView.Adapter<MovieReviewAdapter.
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.review, parent, false);
+                 .inflate(R.layout.review, parent, false);
 
         return new MovieReviewAdapter.MyViewHolder(itemView);
     }
@@ -39,7 +40,7 @@ public class MovieReviewAdapter extends RecyclerView.Adapter<MovieReviewAdapter.
         holder.authorText.setText(movieReview.getAuthor());
         holder.commentText.setText(movieReview.getComment());
         if (position == mReviewList.size() - 1) {
-            holder.rootView.setBackground(null);
+            holder.itemView.setBackground(null);
         }
     }
 
@@ -65,19 +66,11 @@ public class MovieReviewAdapter extends RecyclerView.Adapter<MovieReviewAdapter.
 
     class MyViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.movie_review_author) TextView authorText;
-        @BindView(R.id.movie_review) TextView commentText;
-        View rootView;
+        @BindView(R.id.movie_review) ExpandableTextView commentText;
 
         MyViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
-            rootView = itemView;
-            commentText.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    // TODO Read full review
-                }
-            });
         }
     }
 
