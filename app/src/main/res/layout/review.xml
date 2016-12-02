@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end|bottom"
             android:background="@android:color/transparent"
-            android:contentDescription="Expand or Collapse"
+            android:contentDescription="@string/expand_icon_content_desc"
             android:padding="16dp" />
 
     </com.ms.square.android.expandabletextview.ExpandableTextView>

@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.database.Cursor;
 import android.graphics.Rect;
 import android.net.ConnectivityManager;
 import android.net.Uri;
@@ -27,6 +28,7 @@ import android.view.ViewGroup;
 import com.iamzhaoyuan.android.popularmovies.BuildConfig;
 import com.iamzhaoyuan.android.popularmovies.R;
 import com.iamzhaoyuan.android.popularmovies.adapter.MovieAdapter;
+import com.iamzhaoyuan.android.popularmovies.data.MovieContract;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
 import com.iamzhaoyuan.android.popularmovies.listener.OnLoadMoreListener;
 import com.iamzhaoyuan.android.popularmovies.util.GridSpacingItemDecoration;
@@ -58,6 +60,10 @@ public class PosterFragment extends Fragment {
     private static final String SORT_BY_KEY = "sort_by";
     private int page = 1;
     @BindView(R.id.recycler_view) RecyclerView mRecyclerView;
+
+    private static final String[] FAVOURITE_PROJECTION = new String[]{MovieContract.MovieEntry.COLUMN_MOVIE_ID};
+
+    private static final int INDEX_MOVIE_ID = 0;
 
     private MovieAdapter mImageAdapter;
     private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
@@ -174,6 +180,16 @@ public class PosterFragment extends Fragment {
         if (getString(R.string.pref_sort_by_favourite)
                 .equals(getArguments().getString(SORT_BY_KEY))) {
             // TODO Fetch favourite movies from DB
+            Cursor cursor = getContext().getContentResolver().query(
+                    MovieContract.MovieEntry.CONTENT_URI, FAVOURITE_PROJECTION, null, null, null);
+            List<String> favMovieIds = new ArrayList<>();
+            while (cursor.moveToNext()) {
+                favMovieIds.add(cursor.getString(INDEX_MOVIE_ID));
+            }
+            if (!favMovieIds.isEmpty()) {
+                new FetchFavouriteMovieTask().execute(favMovieIds);
+            }
+
         } else {
             new FetchMovieTask().execute(page);
             page++;
@@ -274,8 +290,7 @@ public class PosterFragment extends Fragment {
             }
         }
 
-        private List<Movie> getMovieDataFromJson(String moviesJsonStr)
-            throws JSONException {
+        private List<Movie> getMovieDataFromJson(String moviesJsonStr) throws JSONException {
             // These are the names of the JSON objects that need to be extracted.
             final String NODE_RESULTS = "results";
             final String NODE_POSTER_PATH = "poster_path";
@@ -316,6 +331,132 @@ public class PosterFragment extends Fragment {
             }
 
             return resultList;
+        }
+    }
+
+    public class FetchFavouriteMovieTask extends AsyncTask<List<String>, Void, List<Movie>> {
+
+        @Override
+        protected List<Movie> doInBackground(List<String>... params) {
+            // These two need to be declared outside the try/catch
+            // so that they can be closed in the finally block.
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
+
+            // Will contain the raw JSON response as a string.
+            List<String> moviesJsonStrList = new ArrayList<>();
+
+            List<String> ids = params[0];
+
+            try {
+                final String MOVIE_BASE_URL =
+                        "https://api.themoviedb.org/3/movie/";
+                final String APIKEY_PARAM = "api_key";
+
+                for (String id : ids) {
+
+                    Uri builtUri = Uri.parse(MOVIE_BASE_URL).buildUpon()
+                            .appendPath(id)
+                            .appendQueryParameter(APIKEY_PARAM, BuildConfig.THEMOVIEDB_API_KEY)
+                            .build();
+
+                    URL url = new URL(builtUri.toString());
+
+                    // Create the request to The Movie DB, and open the connection
+                    urlConnection = (HttpURLConnection) url.openConnection();
+                    urlConnection.setRequestMethod("GET");
+                    urlConnection.connect();
+
+                    // Read the input stream into a String
+                    InputStream inputStream = urlConnection.getInputStream();
+                    StringBuffer buffer = new StringBuffer();
+                    if (inputStream == null) {
+                        // Nothing to do.
+                        return null;
+                    }
+                    reader = new BufferedReader(new InputStreamReader(inputStream));
+
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                        // But it does make debugging a *lot* easier if you print out the completed
+                        // buffer for debugging.
+                        buffer.append(line + "\n");
+                    }
+
+                    if (buffer.length() == 0) {
+                        // Stream was empty.  No point in parsing.
+                        return null;
+                    }
+                    moviesJsonStrList.add(buffer.toString());
+                }
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "Error ", e);
+                // If the code didn't successfully get the weather data, there's no point in attemping
+                // to parse it.
+                return null;
+            } finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (final IOException e) {
+                        Log.e(LOG_TAG, "Error closing stream", e);
+                    }
+                }
+            }
+
+            try {
+                return getMovieDataListFromJson(moviesJsonStrList);
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, e.getMessage(), e);
+                e.printStackTrace();
+            }
+
+            return null;
+
+        }
+
+        @Override
+        protected void onPostExecute(List<Movie> movies) {
+            if (!movies.isEmpty()) {
+                mImageAdapter.clearMovies();
+                mImageAdapter.addMovies(movies);
+            }
+        }
+
+        private List<Movie> getMovieDataListFromJson(List<String> moviesJsonStrList) throws JSONException {
+            List<Movie> movieList = new ArrayList<>();
+            for (String movieJsonStr : moviesJsonStrList) {
+                movieList.add(getMovieDataFromJson(movieJsonStr));
+            }
+            return movieList;
+        }
+
+        private Movie getMovieDataFromJson(String moviesJsonStr) throws JSONException {
+            // These are the names of the JSON objects that need to be extracted.
+            final String NODE_RESULTS = "results";
+            final String NODE_POSTER_PATH = "poster_path";
+            final String NODE_OVERVIEW = "overview";
+            final String NODE_RELEASE_DATE = "release_date";
+            final String NODE_ORIGINAL_TITLE = "original_title";
+            final String NODE_VOTE_AVERAGE = "vote_average";
+            final String NODE_ID = "id";
+            final String NODE_BACKDROP = "backdrop_path";
+
+            JSONObject movieObj = new JSONObject(moviesJsonStr);
+            String posterPath = movieObj.getString(NODE_POSTER_PATH);
+            String overview = movieObj.getString(NODE_OVERVIEW);
+            String releaseDate = movieObj.getString(NODE_RELEASE_DATE);
+            String title = movieObj.getString(NODE_ORIGINAL_TITLE);
+            double rating = movieObj.getDouble(NODE_VOTE_AVERAGE);
+            String id = movieObj.getString(NODE_ID);
+            boolean isFavourite = false; // TODO should get from DB
+            String backdrop = movieObj.getString(NODE_BACKDROP);
+
+            return new Movie(title, posterPath, overview, rating, releaseDate, id, isFavourite, backdrop);
         }
     }
 }
