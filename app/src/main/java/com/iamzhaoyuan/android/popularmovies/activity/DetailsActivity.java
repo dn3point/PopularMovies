@@ -20,6 +20,7 @@ import com.iamzhaoyuan.android.popularmovies.R;
 import com.iamzhaoyuan.android.popularmovies.data.MovieContract.MovieEntry;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
 import com.iamzhaoyuan.android.popularmovies.fragment.DetailsFragment;
+import com.iamzhaoyuan.android.popularmovies.util.DBUtil;
 import com.iamzhaoyuan.android.popularmovies.util.MovieUtil;
 import com.squareup.picasso.Picasso;
 
@@ -93,6 +94,7 @@ public class DetailsActivity extends AppCompatActivity {
             }
         });
 
+        mMovie.setFavourite(DBUtil.getInstance().isFavourite(this, mMovie.getId()));
         if (mMovie.isFavourite()) {
             mFloatingActionButton.setImageDrawable(getDrawable(R.drawable.fav_white));
         } else {

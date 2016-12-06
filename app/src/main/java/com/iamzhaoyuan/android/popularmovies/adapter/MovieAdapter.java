@@ -61,18 +61,23 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             Picasso.with(mContext)
                     .load(MovieUtil.getInstance().getPosterUrl(movie.getImageThumbnail()))
                     .into(posterHolder.poster);
-
-            updateFavouriteImage(posterHolder.favourite, movie.isFavourite());
-            posterHolder.favourite.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    movie.setFavourite(!movie.isFavourite());
-                    updateFavourite(posterHolder.favourite, movie);
-                    if (isFavouriteTab && !movie.isFavourite()) {
-                        remove(position);
+            if (isFavouriteTab) {
+                updateFavouriteImage(posterHolder.favourite, movie.isFavourite());
+                posterHolder.favourite.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        movie.setFavourite(!movie.isFavourite());
+                        updateFavourite(posterHolder.favourite, movie);
+                        if (isFavouriteTab && !movie.isFavourite()) {
+                            remove(position);
+                        }
                     }
-                }
-            });
+                });
+                posterHolder.rate.setVisibility(View.INVISIBLE);
+            } else {
+                posterHolder.rate.setText(movie.getRating() + "");
+                posterHolder.favourite.setVisibility(View.INVISIBLE);
+            }
 
             posterHolder.poster.setOnClickListener(new OnClickListener() {
                 @Override
@@ -229,6 +234,7 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         @BindView(R.id.title) TextView title;
         @BindView(R.id.poster) ImageView poster;
         @BindView(R.id.favourite) ImageView favourite;
+        @BindView(R.id.rate) TextView rate;
 
         PosterViewHolder(View itemView) {
             super(itemView);

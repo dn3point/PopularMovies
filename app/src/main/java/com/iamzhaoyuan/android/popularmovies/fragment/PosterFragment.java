@@ -26,6 +26,7 @@ import com.iamzhaoyuan.android.popularmovies.adapter.MovieAdapter;
 import com.iamzhaoyuan.android.popularmovies.data.MovieContract.MovieEntry;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
 import com.iamzhaoyuan.android.popularmovies.listener.OnLoadMoreListener;
+import com.iamzhaoyuan.android.popularmovies.util.DBUtil;
 import com.iamzhaoyuan.android.popularmovies.util.NetworkUtil;
 
 import org.json.JSONArray;
@@ -321,7 +322,7 @@ public class PosterFragment extends Fragment {
                 String title = movieObj.getString(NODE_ORIGINAL_TITLE);
                 double rating = movieObj.getDouble(NODE_VOTE_AVERAGE);
                 String id = movieObj.getString(NODE_ID);
-                boolean isFavourite = isFavourite(id);
+                boolean isFavourite = DBUtil.getInstance().isFavourite(getContext(), id);
                 String backdrop = movieObj.getString(NODE_BACKDROP);
 
                 Movie movie = new Movie(
@@ -340,20 +341,6 @@ public class PosterFragment extends Fragment {
             return resultList;
         }
 
-        private boolean isFavourite(String movieId) {
-            String mSelectionClause = MovieEntry.COLUMN_MOVIE_ID + " = ?";
-            String[] mSelectionArgs = {movieId};
-            Cursor cursor = null;
-            try {
-                cursor = getContext().getContentResolver().query(
-                        MovieEntry.CONTENT_URI, FAVOURITE_PROJECTION, mSelectionClause, mSelectionArgs, null);
-                return cursor.moveToFirst();
-            } finally {
-                if (cursor != null) {
-                    cursor.close();
-                }
-            }
-        }
     }
 
     public class FetchFavouriteMovieTask extends AsyncTask<List<String>, Void, List<Movie>> {
