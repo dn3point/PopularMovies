@@ -1,9 +1,11 @@
 package com.iamzhaoyuan.android.popularmovies.adapter;
 
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.graphics.Bitmap;
+import android.content.Intent;
 import android.graphics.Point;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -11,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.iamzhaoyuan.android.popularmovies.R;
 import com.iamzhaoyuan.android.popularmovies.util.MovieUtil;
@@ -37,14 +38,20 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MyViewHo
 
     @Override
     public void onBindViewHolder(MyViewHolder holder, int position) {
-        String trailerKey = mTrailerList.get(position);
+        final String trailerKey = mTrailerList.get(position);
         String thumbnail = MovieUtil.getInstance().getTrailerThumbnail(trailerKey);
         Picasso.with(mContext).load(thumbnail).into(holder.thumbnail);
 
         holder.thumbnail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO open trailer
+                Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + trailerKey));
+                Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + trailerKey));
+                try {
+                    mContext.startActivity(appIntent);
+                } catch (ActivityNotFoundException ex) {
+                    mContext.startActivity(webIntent);
+                }
             }
         });
     }
@@ -90,6 +97,5 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MyViewHo
         mContext = context;
         mTrailerList = trailerList;
     }
-
 
 }

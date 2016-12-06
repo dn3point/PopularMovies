@@ -125,8 +125,7 @@ public class DetailsFragment extends Fragment {
             String movieId = params[0];
             String trailerJsonStr = null;
             try {
-                final String MOVIE_BASE_URL =
-                        "https://api.themoviedb.org/3/movie/";
+                final String MOVIE_BASE_URL = "https://api.themoviedb.org/3/movie/";
                 final String APIKEY_PARAM = "api_key";
                 final String VIDEO_PATH = "videos";
                 Uri builtUri = Uri.parse(MOVIE_BASE_URL).buildUpon()
@@ -228,8 +227,7 @@ public class DetailsFragment extends Fragment {
             String movieId = params[0];
             String reviewJsonStr = null;
             try {
-                final String MOVIE_BASE_URL =
-                        "https://api.themoviedb.org/3/movie/";
+                final String MOVIE_BASE_URL = "https://api.themoviedb.org/3/movie/";
                 final String APIKEY_PARAM = "api_key";
                 final String REVIEW_PATH = "reviews";
                 Uri builtUri = Uri.parse(MOVIE_BASE_URL).buildUpon()

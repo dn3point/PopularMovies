@@ -1,10 +1,7 @@
 package com.iamzhaoyuan.android.popularmovies.adapter;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Point;
@@ -16,13 +13,13 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.iamzhaoyuan.android.popularmovies.R;
 import com.iamzhaoyuan.android.popularmovies.activity.DetailsActivity;
+import com.iamzhaoyuan.android.popularmovies.data.MovieContract.MovieEntry;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
 import com.iamzhaoyuan.android.popularmovies.listener.OnLoadMoreListener;
 import com.iamzhaoyuan.android.popularmovies.util.MovieUtil;
@@ -36,9 +33,6 @@ import butterknife.ButterKnife;
 public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final String LOG_TAG = MovieAdapter.class.getSimpleName();
 
-    private static final OvershootInterpolator OVERSHOOT_INTERPOLATOR =
-            new OvershootInterpolator(4);
-
     public static final int VIEW_TYPE_POSTER = 0;
     public static final int VIEW_TYPE_LOADING = 1;
 
@@ -47,7 +41,7 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     private Context mContext;
     private List<Movie> mMovieList;
 
-    private boolean isLoading;
+    private boolean isLoading, isFavouriteTab;
     private int visibleThreshold = 5;
     private int lastVisibleItem, totalItemCount;
 
@@ -57,7 +51,7 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
         if (holder instanceof PosterViewHolder) {
             final PosterViewHolder posterHolder = (PosterViewHolder)holder;
             final Movie movie = mMovieList.get(position);
@@ -67,15 +61,23 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             Picasso.with(mContext)
                     .load(MovieUtil.getInstance().getPosterUrl(movie.getImageThumbnail()))
                     .into(posterHolder.poster);
-
-            updateFavouriteImage(posterHolder.favourite, movie.isFavourite());
-            posterHolder.favourite.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    movie.setFavourite(!movie.isFavourite());
-                    updateFavourite(posterHolder.favourite, movie);
-                }
-            });
+            if (isFavouriteTab) {
+                updateFavouriteImage(posterHolder.favourite, movie.isFavourite());
+                posterHolder.favourite.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        movie.setFavourite(!movie.isFavourite());
+                        updateFavourite(posterHolder.favourite, movie);
+                        if (isFavouriteTab && !movie.isFavourite()) {
+                            remove(position);
+                        }
+                    }
+                });
+                posterHolder.rate.setVisibility(View.INVISIBLE);
+            } else {
+                posterHolder.rate.setText(movie.getRating() + "");
+                posterHolder.favourite.setVisibility(View.INVISIBLE);
+            }
 
             posterHolder.poster.setOnClickListener(new OnClickListener() {
                 @Override
@@ -98,30 +100,10 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     private void updateFavouriteImage(ImageView favourite, boolean isFavourite) {
         if (isFavourite) {
-            likeAnimations(favourite);
+            favourite.setImageResource(R.drawable.favourite);
         } else {
             favourite.setImageResource(R.drawable.outline);
         }
-    }
-
-    private void likeAnimations(final ImageView favourite) {
-        AnimatorSet animatorSet = new AnimatorSet();
-        ObjectAnimator bounceAnimX = ObjectAnimator.ofFloat(favourite, "scaleX", 0.2f, 1f);
-        bounceAnimX.setDuration(300);
-        bounceAnimX.setInterpolator(OVERSHOOT_INTERPOLATOR);
-
-        ObjectAnimator bounceAnimY = ObjectAnimator.ofFloat(favourite, "scaleY", 0.2f, 1f);
-        bounceAnimY.setDuration(300);
-        bounceAnimY.setInterpolator(OVERSHOOT_INTERPOLATOR);
-        bounceAnimY.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                favourite.setImageResource(R.drawable.favourite);
-            }
-        });
-
-        animatorSet.play(bounceAnimX).with(bounceAnimY);
-        animatorSet.start();
     }
 
     private void updateFavourite(ImageView favourite, Movie movie) {
@@ -134,22 +116,20 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
     private void updateFavouriteDB(Movie movie) {
-        // TODO implement codes
+        if (movie.isFavourite()) {
+            ContentValues updateValues = new ContentValues();
+            updateValues.put(MovieEntry.COLUMN_MOVIE_ID, movie.getId());
+            mContext.getContentResolver().insert(MovieEntry.CONTENT_URI, updateValues);
+        } else {
+            String mSelectionClause = MovieEntry.COLUMN_MOVIE_ID + " = ?";
+            String[] mSelectionArgs = {movie.getId()};
+            mContext.getContentResolver().delete(MovieEntry.CONTENT_URI, mSelectionClause, mSelectionArgs);
+        }
     }
 
     @Override
     public int getItemCount() {
         return mMovieList == null ? 0 : mMovieList.size();
-    }
-
-    public void clearMovies() {
-        int size = mMovieList.size();
-        if (size > 0) {
-            for (int i = 0; i < size; i++) {
-                mMovieList.remove(0);
-            }
-            notifyItemRangeRemoved(0, size);
-        }
     }
 
     @Override
@@ -171,6 +151,15 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         return null;
     }
 
+    public void clearMovies() {
+        int size = mMovieList.size();
+        if (size > 0) {
+            for (int i = 0; i < size; i++) {
+                mMovieList.remove(0);
+            }
+            notifyItemRangeRemoved(0, size);
+        }
+    }
 
     public void addMovies(List<Movie> movies) {
         int startPosition = mMovieList == null ? 0 : mMovieList.size();
@@ -191,6 +180,7 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     public void remove(int position) {
         mMovieList.remove(position);
         notifyItemRemoved(position);
+        notifyItemRangeChanged(position, getItemCount());
     }
 
     public void setOnLoadMoreListener(OnLoadMoreListener mOnLoadMoreListener) {
@@ -232,8 +222,8 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         return visibleThreshold;
     }
 
-    public void setVisibleThreshold(int visibleThreshold) {
-        this.visibleThreshold = visibleThreshold;
+    public void setFavouriteTab(boolean favouriteTab) {
+        isFavouriteTab = favouriteTab;
     }
 
     public OnLoadMoreListener getOnLoadMoreListener() {
@@ -244,6 +234,7 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         @BindView(R.id.title) TextView title;
         @BindView(R.id.poster) ImageView poster;
         @BindView(R.id.favourite) ImageView favourite;
+        @BindView(R.id.rate) TextView rate;
 
         PosterViewHolder(View itemView) {
             super(itemView);

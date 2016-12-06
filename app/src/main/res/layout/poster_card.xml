@@ -25,11 +25,25 @@
                 android:scaleType="centerCrop"
                 android:adjustViewBounds="true" />
 
+            <TextView
+                android:id="@+id/rate"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_below="@id/poster"
+                android:layout_marginTop="@dimen/ic_album_overflow_margin_top"
+                android:layout_marginRight="@dimen/ic_album_overflow_margin_top"
+                android:layout_marginBottom="@dimen/ic_album_overflow_margin_top"
+                android:layout_alignParentRight="true"
+                android:gravity="center_vertical"
+                android:textSize="@dimen/album_title"
+                android:maxLines="1"/>
+
             <ImageView
                 android:id="@+id/favourite"
                 android:layout_width="@dimen/ic_album_overflow_width"
                 android:layout_height="@dimen/ic_album_overflow_height"
                 android:layout_alignParentRight="true"
+                android:layout_toLeftOf="@id/rate"
                 android:layout_below="@id/poster"
                 android:layout_marginTop="@dimen/ic_album_overflow_margin_top"
                 android:layout_marginRight="@dimen/ic_album_overflow_margin_top"
