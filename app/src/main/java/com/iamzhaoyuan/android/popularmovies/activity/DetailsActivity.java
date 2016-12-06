@@ -1,5 +1,6 @@
 package com.iamzhaoyuan.android.popularmovies.activity;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.iamzhaoyuan.android.popularmovies.R;
+import com.iamzhaoyuan.android.popularmovies.data.MovieContract.MovieEntry;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
 import com.iamzhaoyuan.android.popularmovies.fragment.DetailsFragment;
 import com.iamzhaoyuan.android.popularmovies.util.MovieUtil;
@@ -80,13 +82,18 @@ public class DetailsActivity extends AppCompatActivity {
                     Snackbar.make(v, "Remove from favourite", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
                     mMovie.setFavourite(false);
+                    String mSelectionClause = MovieEntry.COLUMN_MOVIE_ID + " = ?";
+                    String[] mSelectionArgs = {mMovie.getId()};
+                    getContentResolver().delete(MovieEntry.CONTENT_URI, mSelectionClause, mSelectionArgs);
                 } else {
                     ((FloatingActionButton) v).setImageDrawable(getDrawable(R.drawable.fav_white));
                     Snackbar.make(v, "Add to favourite", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
                     mMovie.setFavourite(true);
+                    ContentValues updateValues = new ContentValues();
+                    updateValues.put(MovieEntry.COLUMN_MOVIE_ID, mMovie.getId());
+                    getContentResolver().insert(MovieEntry.CONTENT_URI, updateValues);
                 }
-                // TODO update database
             }
         });
 

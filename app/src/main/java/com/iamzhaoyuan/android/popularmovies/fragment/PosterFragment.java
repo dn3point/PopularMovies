@@ -5,22 +5,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.database.Cursor;
-import android.graphics.Rect;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,11 +23,9 @@ import android.view.ViewGroup;
 import com.iamzhaoyuan.android.popularmovies.BuildConfig;
 import com.iamzhaoyuan.android.popularmovies.R;
 import com.iamzhaoyuan.android.popularmovies.adapter.MovieAdapter;
-import com.iamzhaoyuan.android.popularmovies.data.MovieContract;
+import com.iamzhaoyuan.android.popularmovies.data.MovieContract.MovieEntry;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
 import com.iamzhaoyuan.android.popularmovies.listener.OnLoadMoreListener;
-import com.iamzhaoyuan.android.popularmovies.util.GridSpacingItemDecoration;
-import com.iamzhaoyuan.android.popularmovies.util.MovieUtil;
 import com.iamzhaoyuan.android.popularmovies.util.NetworkUtil;
 
 import org.json.JSONArray;
@@ -61,7 +54,9 @@ public class PosterFragment extends Fragment {
     private int page = 1;
     @BindView(R.id.recycler_view) RecyclerView mRecyclerView;
 
-    private static final String[] FAVOURITE_PROJECTION = new String[]{MovieContract.MovieEntry.COLUMN_MOVIE_ID};
+    private View mView;
+
+    private static final String[] FAVOURITE_PROJECTION = new String[]{MovieEntry.COLUMN_MOVIE_ID};
 
     private static final int INDEX_MOVIE_ID = 0;
 
@@ -86,7 +81,7 @@ public class PosterFragment extends Fragment {
         args.putString(SORT_BY_KEY, sortBy);
         fragment.setArguments(args);
 
-        return  fragment;
+        return fragment;
     }
 
     @Override
@@ -115,79 +110,91 @@ public class PosterFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_poster, container, false);
-        ButterKnife.bind(this, rootView);
+        if (mView == null) {
+            mView = inflater.inflate(R.layout.fragment_poster, container, false);
+            ButterKnife.bind(this, mView);
 
-        mImageAdapter = new MovieAdapter(getActivity(), new ArrayList<Movie>());
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(), 2);
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.setAdapter(mImageAdapter);
-
-        mImageAdapter.setOnLoadMoreListener(new OnLoadMoreListener() {
-            @Override
-            public void onLoadMore() {
-                Log.i(LOG_TAG, "Load more");
-                mImageAdapter.add(null);
-                new Handler().postDelayed(new Runnable() {
+            mImageAdapter = new MovieAdapter(getActivity(), new ArrayList<Movie>());
+            RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getActivity(), 2);
+            mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+            mRecyclerView.setAdapter(mImageAdapter);
+            if (!isFavouriteTab()) {
+                mImageAdapter.setOnLoadMoreListener(new OnLoadMoreListener() {
                     @Override
-                    public void run() {
-                        Log.i(LOG_TAG, "Load more in thread");
-                        updatePosters();
-                        mImageAdapter.setLoading(false);
+                    public void onLoadMore() {
+                        Log.i(LOG_TAG, "Load more");
+                        mImageAdapter.add(null);
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                Log.i(LOG_TAG, "Load more in thread");
+                                updatePosters();
+                                mImageAdapter.setLoading(false);
+                            }
+                        }, 5000);
                     }
-                }, 5000);
-            }
-        });
+                });
 
-        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                GridLayoutManager gridLayoutManager = (GridLayoutManager)recyclerView.getLayoutManager();
-                MovieAdapter movieAdapter = (MovieAdapter)recyclerView.getAdapter();
-                movieAdapter.setTotalItemCount(gridLayoutManager.getItemCount());
-                movieAdapter.setLastVisibleItem(gridLayoutManager.findLastVisibleItemPosition());
+                mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                    @Override
+                    public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                        super.onScrolled(recyclerView, dx, dy);
+                        GridLayoutManager gridLayoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
+                        MovieAdapter movieAdapter = (MovieAdapter) recyclerView.getAdapter();
+                        movieAdapter.setTotalItemCount(gridLayoutManager.getItemCount());
+                        movieAdapter.setLastVisibleItem(gridLayoutManager.findLastVisibleItemPosition());
 
-                if (!movieAdapter.isLoading() &&
-                        movieAdapter.getTotalItemCount() <= (movieAdapter.getLastVisibleItem() + movieAdapter.getVisibleThreshold())) {
-                    if (movieAdapter.getOnLoadMoreListener() != null) {
-                        movieAdapter.getOnLoadMoreListener().onLoadMore();
+                        if (!movieAdapter.isLoading() &&
+                                movieAdapter.getTotalItemCount() <= (movieAdapter.getLastVisibleItem() + movieAdapter.getVisibleThreshold())) {
+                            if (movieAdapter.getOnLoadMoreListener() != null) {
+                                movieAdapter.getOnLoadMoreListener().onLoadMore();
+                            }
+                            movieAdapter.setLoading(true);
+                        }
                     }
-                    movieAdapter.setLoading(true);
-                }
+                });
+            } else {
+                mImageAdapter.setFavouriteTab(true);
             }
-        });
-
-        mRecyclerView.setLayoutManager(layoutManager);
-        ((GridLayoutManager)layoutManager).setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-            @Override
-            public int getSpanSize(int position) {
-                switch(mImageAdapter.getItemViewType(position)){
-                    case MovieAdapter.VIEW_TYPE_LOADING:
-                        return 2;
-                    case MovieAdapter.VIEW_TYPE_POSTER:
-                        return 1;
-                    default:
-                        return -1;
+            mRecyclerView.setLayoutManager(layoutManager);
+            ((GridLayoutManager) layoutManager).setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                @Override
+                public int getSpanSize(int position) {
+                    switch (mImageAdapter.getItemViewType(position)) {
+                        case MovieAdapter.VIEW_TYPE_LOADING:
+                            return 2;
+                        case MovieAdapter.VIEW_TYPE_POSTER:
+                            return 1;
+                        default:
+                            return -1;
+                    }
                 }
-            }
-        });
+            });
+        }
+        return mView;
+    }
 
-        return rootView;
+    private boolean isFavouriteTab() {
+        return getString(R.string.pref_sort_by_favourite).equals(getArguments().getString(SORT_BY_KEY));
     }
 
     private void updatePosters() {
-        if (getString(R.string.pref_sort_by_favourite)
-                .equals(getArguments().getString(SORT_BY_KEY))) {
-            // TODO Fetch favourite movies from DB
-            Cursor cursor = getContext().getContentResolver().query(
-                    MovieContract.MovieEntry.CONTENT_URI, FAVOURITE_PROJECTION, null, null, null);
-            List<String> favMovieIds = new ArrayList<>();
-            while (cursor.moveToNext()) {
-                favMovieIds.add(cursor.getString(INDEX_MOVIE_ID));
-            }
-            if (!favMovieIds.isEmpty()) {
-                new FetchFavouriteMovieTask().execute(favMovieIds);
+        if (isFavouriteTab()) {
+            Cursor cursor = null;
+            try {
+                cursor = getContext().getContentResolver().query(
+                        MovieEntry.CONTENT_URI, FAVOURITE_PROJECTION, null, null, null);
+                List<String> favMovieIds = new ArrayList<>();
+                while (cursor.moveToNext()) {
+                    favMovieIds.add(cursor.getString(INDEX_MOVIE_ID));
+                }
+                if (!favMovieIds.isEmpty()) {
+                    new FetchFavouriteMovieTask().execute(favMovieIds);
+                }
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
             }
 
         } else {
@@ -314,7 +321,7 @@ public class PosterFragment extends Fragment {
                 String title = movieObj.getString(NODE_ORIGINAL_TITLE);
                 double rating = movieObj.getDouble(NODE_VOTE_AVERAGE);
                 String id = movieObj.getString(NODE_ID);
-                boolean isFavourite = false; // TODO should get from DB
+                boolean isFavourite = isFavourite(id);
                 String backdrop = movieObj.getString(NODE_BACKDROP);
 
                 Movie movie = new Movie(
@@ -331,6 +338,21 @@ public class PosterFragment extends Fragment {
             }
 
             return resultList;
+        }
+
+        private boolean isFavourite(String movieId) {
+            String mSelectionClause = MovieEntry.COLUMN_MOVIE_ID + " = ?";
+            String[] mSelectionArgs = {movieId};
+            Cursor cursor = null;
+            try {
+                cursor = getContext().getContentResolver().query(
+                        MovieEntry.CONTENT_URI, FAVOURITE_PROJECTION, mSelectionClause, mSelectionArgs, null);
+                return cursor.moveToFirst();
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
         }
     }
 
@@ -437,7 +459,6 @@ public class PosterFragment extends Fragment {
 
         private Movie getMovieDataFromJson(String moviesJsonStr) throws JSONException {
             // These are the names of the JSON objects that need to be extracted.
-            final String NODE_RESULTS = "results";
             final String NODE_POSTER_PATH = "poster_path";
             final String NODE_OVERVIEW = "overview";
             final String NODE_RELEASE_DATE = "release_date";
@@ -453,7 +474,7 @@ public class PosterFragment extends Fragment {
             String title = movieObj.getString(NODE_ORIGINAL_TITLE);
             double rating = movieObj.getDouble(NODE_VOTE_AVERAGE);
             String id = movieObj.getString(NODE_ID);
-            boolean isFavourite = false; // TODO should get from DB
+            boolean isFavourite = true;
             String backdrop = movieObj.getString(NODE_BACKDROP);
 
             return new Movie(title, posterPath, overview, rating, releaseDate, id, isFavourite, backdrop);

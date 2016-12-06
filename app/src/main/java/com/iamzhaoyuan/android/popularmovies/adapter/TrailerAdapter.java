@@ -2,7 +2,6 @@ package com.iamzhaoyuan.android.popularmovies.adapter;
 
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.support.v7.widget.RecyclerView;
 import android.view.Display;
@@ -11,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.iamzhaoyuan.android.popularmovies.R;
 import com.iamzhaoyuan.android.popularmovies.util.MovieUtil;
@@ -40,13 +38,6 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MyViewHo
         String trailerKey = mTrailerList.get(position);
         String thumbnail = MovieUtil.getInstance().getTrailerThumbnail(trailerKey);
         Picasso.with(mContext).load(thumbnail).into(holder.thumbnail);
-
-        holder.thumbnail.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO open trailer
-            }
-        });
     }
 
     @Override
@@ -90,6 +81,5 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MyViewHo
         mContext = context;
         mTrailerList = trailerList;
     }
-
 
 }
