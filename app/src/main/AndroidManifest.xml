@@ -13,6 +13,7 @@
         android:theme="@style/MyTheme.Base">
         <activity android:name=".activity.MainActivity"
             android:label="@string/title_activity_main"
+            android:launchMode="singleTop"
             android:theme="@style/MainActivityTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
