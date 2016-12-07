@@ -1,6 +1,5 @@
 package com.iamzhaoyuan.android.popularmovies.activity;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -9,9 +8,8 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
 
+import com.iamzhaoyuan.android.popularmovies.fragment.DetailsFragment;
 import com.iamzhaoyuan.android.popularmovies.fragment.PosterFragment;
 import com.iamzhaoyuan.android.popularmovies.R;
 
@@ -23,6 +21,9 @@ import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
+    private static final String DETAILSFRAGMENT_TAG = "DFTAG";
+
+    private boolean mTwoPane;
 
     @BindView(R.id.toolbar) Toolbar mToolbar;
     @BindView(R.id.tabs) TabLayout mTabLayout;
@@ -32,11 +33,21 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (savedInstanceState == null) {
-            ButterKnife.bind(this);
-            setSupportActionBar(mToolbar);
-            setupViewPager(mViewPager);
-            mTabLayout.setupWithViewPager(mViewPager);
+
+        ButterKnife.bind(this);
+        setSupportActionBar(mToolbar);
+        setupViewPager(mViewPager);
+        mTabLayout.setupWithViewPager(mViewPager);
+
+        if (findViewById(R.id.detail_content) != null) {
+            mTwoPane = true;
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.detail_content, new DetailsFragment(), DETAILSFRAGMENT_TAG)
+                        .commit();
+            }
+        } else {
+            mTwoPane = false;
         }
     }
 

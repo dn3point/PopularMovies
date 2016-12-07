@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.iamzhaoyuan.android.popularmovies.BuildConfig;
@@ -22,6 +23,7 @@ import com.iamzhaoyuan.android.popularmovies.adapter.TrailerAdapter;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
 import com.iamzhaoyuan.android.popularmovies.entity.MovieReview;
 import com.iamzhaoyuan.android.popularmovies.util.MovieUtil;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,6 +53,9 @@ public class DetailsFragment extends Fragment {
     @BindView(R.id.movie_overview) TextView mOverviewTextView;
     @BindView(R.id.trailers) RecyclerView mTrailerRecyclerView;
     @BindView(R.id.reviews) RecyclerView mReviewRecyclerView;
+    @BindView(R.id.movie_trailer_title) TextView mTrailerTitle;
+    @BindView(R.id.movie_review_title) TextView mReviewTitle;
+    @BindView(R.id.backdrop) ImageView mBackdrop;
 
     private Movie mMovie;
     private TrailerAdapter mTrailerAdapter;
@@ -77,7 +82,7 @@ public class DetailsFragment extends Fragment {
                 inflater.inflate(R.layout.fragment_details, container, false);
         // Get Movie Obj from intent
         Intent intent = getActivity().getIntent();
-        if (intent != null) {
+        if (intent != null && intent.getExtras() != null) {
             mMovie = intent.getExtras().getParcelable(getString(R.string.intent_movie_obj_tag));
         } else {
             Log.d(LOG_TAG, "Intent from MainActivity is null?");
@@ -86,18 +91,24 @@ public class DetailsFragment extends Fragment {
             Log.i(LOG_TAG, mMovie.getId());
             ButterKnife.bind(this, rootView);
             // Set contents
-            MovieUtil movieUtil = MovieUtil.getInstance();
+            if (mBackdrop != null) {
+                Picasso.with(getContext()).load(MovieUtil.getInstance().getBackdropUrl(mMovie.getBackdrop())).into(mBackdrop);
+            }
+
             mTitleTextView.setText(mMovie.getTitle());
             mReleaseDateTextView.setText(getActivity().getString(R.string.movie_released_date_prefix) + mMovie.getReleaseDate());
             mRatingTextView.setText(getActivity().getString(R.string.movie_rating_prefix) + mMovie.getRating());
+            mOverviewTextView.setBackground(getActivity().getDrawable(R.drawable.overview_border));
             mOverviewTextView.setText(mMovie.getOverview());
 
+            mTrailerTitle.setText(getString(R.string.movie_trailer_title));
             mTrailerAdapter = new TrailerAdapter(getActivity(), new ArrayList<String>());
             LinearLayoutManager trailerLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false);
             mTrailerRecyclerView.setLayoutManager(trailerLayoutManager);
             mTrailerRecyclerView.setItemAnimator(new DefaultItemAnimator());
             mTrailerRecyclerView.setAdapter(mTrailerAdapter);
 
+            mReviewTitle.setText(getString(R.string.movie_review_title));
             mMovieReviewAdapter = new MovieReviewAdapter(getActivity(), new ArrayList<MovieReview>());
             LinearLayoutManager  reviewLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
             mReviewRecyclerView.setLayoutManager(reviewLayoutManager);

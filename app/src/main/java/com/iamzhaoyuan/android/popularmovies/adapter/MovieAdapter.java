@@ -261,6 +261,7 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             Display display = wm.getDefaultDisplay();
             Point size = new Point();
             display.getSize(size);
+            // TODO change height for tablet
             poster.getLayoutParams().height = (size.y << 1) / 5;
         }
 
