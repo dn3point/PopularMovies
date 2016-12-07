@@ -57,10 +57,6 @@ public class PosterFragment extends Fragment {
 
     private View mView;
 
-    private static final String[] FAVOURITE_PROJECTION = new String[]{MovieEntry.COLUMN_MOVIE_ID};
-
-    private static final int INDEX_MOVIE_ID = 0;
-
     private MovieAdapter mImageAdapter;
     private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
         @Override
@@ -181,23 +177,13 @@ public class PosterFragment extends Fragment {
 
     private void updatePosters() {
         if (isFavouriteTab()) {
-            Cursor cursor = null;
-            try {
-                cursor = getContext().getContentResolver().query(
-                        MovieEntry.CONTENT_URI, FAVOURITE_PROJECTION, null, null, null);
-                List<String> favMovieIds = new ArrayList<>();
-                while (cursor.moveToNext()) {
-                    favMovieIds.add(cursor.getString(INDEX_MOVIE_ID));
-                }
-                if (!favMovieIds.isEmpty()) {
-                    new FetchFavouriteMovieTask().execute(favMovieIds);
-                }
-            } finally {
-                if (cursor != null) {
-                    cursor.close();
-                }
+            List<String> favouriteMovieIds = DBUtil.getInstance().getFavouriteMovieIds(getContext());
+            if (favouriteMovieIds.isEmpty()) {
+                mImageAdapter.clearMovies();
             }
-
+            if (!mImageAdapter.isUpdated(favouriteMovieIds)) {
+                new FetchFavouriteMovieTask().execute(favouriteMovieIds);
+            }
         } else {
             new FetchMovieTask().execute(page);
             page++;

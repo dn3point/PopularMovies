@@ -17,6 +17,7 @@ public class DBUtil {
     private static DBUtil instance = null;
 
     private static final String[] FAVOURITE_PROJECTION = new String[]{MovieContract.MovieEntry.COLUMN_MOVIE_ID};
+    private static final int INDEX_MOVIE_ID = 0;
 
     private DBUtil() {}
 
@@ -31,21 +32,31 @@ public class DBUtil {
         Cursor cursor = null;
         try {
             cursor = context.getContentResolver().query(
+                    MovieContract.MovieEntry.CONTENT_URI, FAVOURITE_PROJECTION, mSelectionClause, mSelectionArgs, null);
+            return cursor.moveToFirst();
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+    public List<String> getFavouriteMovieIds(Context context) {
+        Cursor cursor = null;
+        List<String> favMovieIds = null;
+        try {
+            cursor = context.getContentResolver().query(
                     MovieContract.MovieEntry.CONTENT_URI, FAVOURITE_PROJECTION, null, null, null);
-            try {
-                cursor = context.getContentResolver().query(
-                        MovieContract.MovieEntry.CONTENT_URI, FAVOURITE_PROJECTION, mSelectionClause, mSelectionArgs, null);
-                return cursor.moveToFirst();
-            } finally {
-                if (cursor != null) {
-                    cursor.close();
-                }
+            favMovieIds = new ArrayList<>();
+            while (cursor.moveToNext()) {
+                favMovieIds.add(cursor.getString(INDEX_MOVIE_ID));
             }
         } finally {
             if (cursor != null) {
                 cursor.close();
             }
         }
+        return favMovieIds;
     }
 
 }

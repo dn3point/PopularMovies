@@ -25,7 +25,9 @@ import com.iamzhaoyuan.android.popularmovies.listener.OnLoadMoreListener;
 import com.iamzhaoyuan.android.popularmovies.util.MovieUtil;
 import com.squareup.picasso.Picasso;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -190,6 +192,21 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     public boolean isLastItemNull() {
         if (mMovieList != null && !mMovieList.isEmpty() && mMovieList.get(mMovieList.size() - 1) == null) {
             return true;
+        }
+        return false;
+    }
+
+    public boolean isUpdated(List<String> movieIds) {
+        if (mMovieList != null && !mMovieList.isEmpty()) {
+            if (mMovieList.size() == movieIds.size()) {
+                Set<String> idSet = new HashSet<>(movieIds);
+                for (Movie movie : mMovieList) {
+                    idSet.remove(movie.getId());
+                }
+                if (idSet.isEmpty()) {
+                    return true;
+                }
+            }
         }
         return false;
     }
