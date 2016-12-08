@@ -1,8 +1,11 @@
 package com.iamzhaoyuan.android.popularmovies.fragment;
 
 
-import android.content.ContentValues;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -23,11 +26,11 @@ import com.iamzhaoyuan.android.popularmovies.BuildConfig;
 import com.iamzhaoyuan.android.popularmovies.R;
 import com.iamzhaoyuan.android.popularmovies.adapter.MovieReviewAdapter;
 import com.iamzhaoyuan.android.popularmovies.adapter.TrailerAdapter;
-import com.iamzhaoyuan.android.popularmovies.data.MovieContract;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
 import com.iamzhaoyuan.android.popularmovies.entity.MovieReview;
 import com.iamzhaoyuan.android.popularmovies.util.DBUtil;
 import com.iamzhaoyuan.android.popularmovies.util.MovieUtil;
+import com.iamzhaoyuan.android.popularmovies.util.NetworkUtil;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -46,24 +49,39 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-/**
- * A simple {@link Fragment} subclass.
- */
 public class DetailsFragment extends Fragment {
     private static final String LOG_TAG = DetailsFragment.class.getSimpleName();
 
-    @BindView(R.id.movie_title) TextView mTitleTextView;
-    @BindView(R.id.movie_release_date) TextView mReleaseDateTextView;
-    @BindView(R.id.movie_rating) TextView mRatingTextView;
-    @BindView(R.id.movie_overview) TextView mOverviewTextView;
-    @BindView(R.id.trailers) RecyclerView mTrailerRecyclerView;
-    @BindView(R.id.reviews) RecyclerView mReviewRecyclerView;
-    @BindView(R.id.movie_trailer_title) TextView mTrailerTitle;
-    @BindView(R.id.movie_review_title) TextView mReviewTitle;
+    @BindView(R.id.movie_title)
+    TextView mTitleTextView;
+    @BindView(R.id.movie_release_date)
+    TextView mReleaseDateTextView;
+    @BindView(R.id.movie_rating)
+    TextView mRatingTextView;
+    @BindView(R.id.movie_overview)
+    TextView mOverviewTextView;
+    @BindView(R.id.trailers)
+    RecyclerView mTrailerRecyclerView;
+    @BindView(R.id.reviews)
+    RecyclerView mReviewRecyclerView;
+    @BindView(R.id.movie_trailer_title)
+    TextView mTrailerTitle;
+    @BindView(R.id.movie_review_title)
+    TextView mReviewTitle;
 
     private Movie mMovie;
     private TrailerAdapter mTrailerAdapter;
     private MovieReviewAdapter mMovieReviewAdapter;
+
+    private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            NetworkUtil networkUtil = NetworkUtil.getInstance();
+            if (networkUtil.isNetworkConnected(context)) {
+                updateInfo(mMovie.getId());
+            }
+        }
+    };
 
     public DetailsFragment() {
     }
@@ -71,19 +89,34 @@ public class DetailsFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        if (mMovie != null) {
-            updateInfo(mMovie.getId());
-        } else {
-            Log.d(LOG_TAG, "Movie is null?");
+        if (NetworkUtil.getInstance().isNetworkConnected(getActivity())) {
+            if (mMovie != null) {
+                updateInfo(mMovie.getId());
+            } else {
+                Log.d(LOG_TAG, "Movie is null?");
+            }
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        getActivity().registerReceiver(mNetworkReceiver, intentFilter);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        getActivity().unregisterReceiver(mNetworkReceiver);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView =
-                inflater.inflate(R.layout.fragment_details, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_details, container, false);
         // Get Movie Obj from intent
         if (getActivity().getIntent() != null && getActivity().getIntent().getExtras() != null) {
             mMovie = getActivity().getIntent().getExtras().getParcelable(getString(R.string.intent_movie_obj_tag));
@@ -143,7 +176,7 @@ public class DetailsFragment extends Fragment {
 
             mReviewTitle.setText(getString(R.string.movie_review_title));
             mMovieReviewAdapter = new MovieReviewAdapter(getActivity(), new ArrayList<MovieReview>());
-            LinearLayoutManager  reviewLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
+            LinearLayoutManager reviewLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
             mReviewRecyclerView.setLayoutManager(reviewLayoutManager);
             mReviewRecyclerView.setItemAnimator(new DefaultItemAnimator());
             mReviewRecyclerView.setAdapter(mMovieReviewAdapter);
@@ -231,7 +264,7 @@ public class DetailsFragment extends Fragment {
             return null;
         }
 
-        private List<String> getTrailerFromJson(String trailerJsonStr) throws JSONException{
+        private List<String> getTrailerFromJson(String trailerJsonStr) throws JSONException {
             final String NODE_RESULTS = "results";
             final String NODE_SITE = "site";
             final String Node_KEY = "key";
@@ -255,7 +288,7 @@ public class DetailsFragment extends Fragment {
         @Override
         protected void onPostExecute(List<String> trailerKeyList) {
             if (trailerKeyList != null) {
-                mTrailerAdapter.clearTrailers();;
+                mTrailerAdapter.clearTrailers();
                 mTrailerAdapter.addTrailers(trailerKeyList);
             }
         }
@@ -358,7 +391,8 @@ public class DetailsFragment extends Fragment {
             if (movieReviews != null) {
                 mMovieReviewAdapter.clearMovieReviews();
                 mMovieReviewAdapter.addMovieReviews(movieReviews);
-            };
+            }
+            ;
         }
     }
 }

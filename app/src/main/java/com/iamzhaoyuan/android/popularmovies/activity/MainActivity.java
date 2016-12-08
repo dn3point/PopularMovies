@@ -22,15 +22,18 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity implements MovieAdapter.Callback{
+public class MainActivity extends AppCompatActivity implements MovieAdapter.Callback {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILSFRAGMENT_TAG = "DFTAG";
 
     private boolean mTwoPane;
 
-    @BindView(R.id.toolbar) Toolbar mToolbar;
-    @BindView(R.id.tabs) TabLayout mTabLayout;
-    @BindView(R.id.viewpager) ViewPager mViewPager;
+    @BindView(R.id.toolbar)
+    Toolbar mToolbar;
+    @BindView(R.id.tabs)
+    TabLayout mTabLayout;
+    @BindView(R.id.viewpager)
+    ViewPager mViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

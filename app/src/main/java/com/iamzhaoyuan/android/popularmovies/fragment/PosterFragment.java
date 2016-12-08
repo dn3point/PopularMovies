@@ -43,16 +43,12 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-
-/**
- * A simple {@link Fragment} subclass.
- */
 public class PosterFragment extends Fragment {
     private static final String LOG_TAG = PosterFragment.class.getSimpleName();
     private static final String SORT_BY_KEY = "sort_by";
+    @BindView(R.id.recycler_view)
+    RecyclerView mRecyclerView;
     private int page = 1;
-    @BindView(R.id.recycler_view) RecyclerView mRecyclerView;
-
     private View mView;
 
     private MovieAdapter mImageAdapter;
@@ -117,12 +113,10 @@ public class PosterFragment extends Fragment {
                 mImageAdapter.setOnLoadMoreListener(new OnLoadMoreListener() {
                     @Override
                     public void onLoadMore() {
-                        Log.i(LOG_TAG, "Load more");
                         mImageAdapter.add(null);
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                Log.i(LOG_TAG, "Load more in thread");
                                 updatePosters();
                                 mImageAdapter.setLoading(false);
                             }

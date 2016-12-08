@@ -27,4 +27,7 @@
     <string name="movie_trailer_title">Trailers</string>
     <string name="movie_review_title">Reviews</string>
     <string name="expand_icon_content_desc">Expand or Collapse</string>
+
+    <string name="remove_fav_movie">Removed from favourite</string>
+    <string name="add_fav_movie">Added to favourite</string>
 </resources>

@@ -3,10 +3,19 @@ package com.iamzhaoyuan.android.popularmovies.entity;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-/**
- * Created by yuan on 29/7/16.
- */
 public class Movie implements Parcelable {
+    public static final Parcelable.Creator<Movie> CREATOR =
+            new Parcelable.Creator<Movie>() {
+                @Override
+                public Movie createFromParcel(Parcel parcel) {
+                    return new Movie(parcel);
+                }
+
+                @Override
+                public Movie[] newArray(int i) {
+                    return new Movie[i];
+                }
+            };
     private String mTitle;
     private String mImageThumbnail;
     private String mOverview;
@@ -58,22 +67,9 @@ public class Movie implements Parcelable {
         dest.writeDouble(mRating);
         dest.writeString(mReleaseDate);
         dest.writeString(mId);
-        dest.writeByte((byte)(mIsFavourite ? 1 : 0));
+        dest.writeByte((byte) (mIsFavourite ? 1 : 0));
         dest.writeString(mBackdrop);
     }
-
-    public static final Parcelable.Creator<Movie> CREATOR =
-            new Parcelable.Creator<Movie>(){
-        @Override
-        public Movie createFromParcel(Parcel parcel) {
-            return new Movie(parcel);
-        }
-
-        @Override
-        public Movie[] newArray(int i) {
-            return new Movie[i];
-        }
-    };
 
     /**
      * Getters and Setters
