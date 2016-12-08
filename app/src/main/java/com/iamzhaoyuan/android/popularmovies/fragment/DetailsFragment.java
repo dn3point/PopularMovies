@@ -77,7 +77,7 @@ public class DetailsFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             NetworkUtil networkUtil = NetworkUtil.getInstance();
-            if (networkUtil.isNetworkConnected(context)) {
+            if (networkUtil.isNetworkConnected(context) && mMovie != null) {
                 updateInfo(mMovie.getId());
             }
         }
