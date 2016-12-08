@@ -87,8 +87,8 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MyViewHo
             Display display = wm.getDefaultDisplay();
             Point size = new Point();
             display.getSize(size);
-            thumbnail.getLayoutParams().width = size.x >> 1;
-            thumbnail.getLayoutParams().height = size.x / 3;
+            thumbnail.getLayoutParams().width = itemView.getLayoutParams().width << 1 / 3;
+            thumbnail.getLayoutParams().height = thumbnail.getLayoutParams().width << 1 / 3;
         }
 
     }

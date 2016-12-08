@@ -84,11 +84,7 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             posterHolder.poster.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(mContext, DetailsActivity.class);
-                    intent.putExtra(
-                            mContext.getString(R.string.intent_movie_obj_tag),
-                            movie);
-                    mContext.startActivity(intent);
+                    ((Callback)mContext).onItemSelected(movie);
                 }
             });
         } else if (holder instanceof ProgressViewHolder) {
@@ -256,13 +252,6 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         PosterViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
-
-            WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
-            Display display = wm.getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            // TODO change height for tablet
-            poster.getLayoutParams().height = (size.y << 1) / 5;
         }
 
     }
@@ -275,5 +264,9 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
+    }
+
+    public interface Callback {
+        public void onItemSelected(Movie movie);
     }
 }

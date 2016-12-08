@@ -108,16 +108,12 @@ public class DetailsActivity extends AppCompatActivity {
                     ((FloatingActionButton) v).setImageDrawable(getDrawable(R.drawable.ol_white));
                     Snackbar.make(v, "Removed from favourite", Snackbar.LENGTH_LONG).setAction("Action", null).show();
                     mMovie.setFavourite(false);
-                    String mSelectionClause = MovieEntry.COLUMN_MOVIE_ID + " = ?";
-                    String[] mSelectionArgs = {mMovie.getId()};
-                    getContentResolver().delete(MovieEntry.CONTENT_URI, mSelectionClause, mSelectionArgs);
+                    DBUtil.getInstance().deleteFavMovie(getApplicationContext(), mMovie.getId());
                 } else {
                     ((FloatingActionButton) v).setImageDrawable(getDrawable(R.drawable.fav_white));
                     Snackbar.make(v, "Added to favourite", Snackbar.LENGTH_LONG).setAction("Action", null).show();
                     mMovie.setFavourite(true);
-                    ContentValues updateValues = new ContentValues();
-                    updateValues.put(MovieEntry.COLUMN_MOVIE_ID, mMovie.getId());
-                    getContentResolver().insert(MovieEntry.CONTENT_URI, updateValues);
+                    DBUtil.getInstance().insertFavMovie(getApplicationContext(), mMovie.getId());
                 }
             }
         });

@@ -1,5 +1,6 @@
 package com.iamzhaoyuan.android.popularmovies.util;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 
@@ -57,6 +58,18 @@ public class DBUtil {
             }
         }
         return favMovieIds;
+    }
+
+    public void deleteFavMovie(Context context, String id) {
+        String mSelectionClause = MovieContract.MovieEntry.COLUMN_MOVIE_ID + " = ?";
+        String[] mSelectionArgs = {id};
+        context.getContentResolver().delete(MovieContract.MovieEntry.CONTENT_URI, mSelectionClause, mSelectionArgs);
+    }
+
+    public void insertFavMovie(Context context, String id) {
+        ContentValues updateValues = new ContentValues();
+        updateValues.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, id);
+        context.getContentResolver().insert(MovieContract.MovieEntry.CONTENT_URI, updateValues);
     }
 
 }

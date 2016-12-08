@@ -1,10 +1,13 @@
 package com.iamzhaoyuan.android.popularmovies.fragment;
 
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -20,8 +23,10 @@ import com.iamzhaoyuan.android.popularmovies.BuildConfig;
 import com.iamzhaoyuan.android.popularmovies.R;
 import com.iamzhaoyuan.android.popularmovies.adapter.MovieReviewAdapter;
 import com.iamzhaoyuan.android.popularmovies.adapter.TrailerAdapter;
+import com.iamzhaoyuan.android.popularmovies.data.MovieContract;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
 import com.iamzhaoyuan.android.popularmovies.entity.MovieReview;
+import com.iamzhaoyuan.android.popularmovies.util.DBUtil;
 import com.iamzhaoyuan.android.popularmovies.util.MovieUtil;
 import com.squareup.picasso.Picasso;
 
@@ -55,7 +60,6 @@ public class DetailsFragment extends Fragment {
     @BindView(R.id.reviews) RecyclerView mReviewRecyclerView;
     @BindView(R.id.movie_trailer_title) TextView mTrailerTitle;
     @BindView(R.id.movie_review_title) TextView mReviewTitle;
-    @BindView(R.id.backdrop) ImageView mBackdrop;
 
     private Movie mMovie;
     private TrailerAdapter mTrailerAdapter;
@@ -81,9 +85,10 @@ public class DetailsFragment extends Fragment {
         View rootView =
                 inflater.inflate(R.layout.fragment_details, container, false);
         // Get Movie Obj from intent
-        Intent intent = getActivity().getIntent();
-        if (intent != null && intent.getExtras() != null) {
-            mMovie = intent.getExtras().getParcelable(getString(R.string.intent_movie_obj_tag));
+        if (getActivity().getIntent() != null && getActivity().getIntent().getExtras() != null) {
+            mMovie = getActivity().getIntent().getExtras().getParcelable(getString(R.string.intent_movie_obj_tag));
+        } else if (getArguments() != null) {
+            mMovie = getArguments().getParcelable(getString(R.string.intent_movie_obj_tag));
         } else {
             Log.d(LOG_TAG, "Intent from MainActivity is null?");
         }
@@ -91,8 +96,36 @@ public class DetailsFragment extends Fragment {
             Log.i(LOG_TAG, mMovie.getId());
             ButterKnife.bind(this, rootView);
             // Set contents
-            if (mBackdrop != null) {
-                Picasso.with(getContext()).load(MovieUtil.getInstance().getBackdropUrl(mMovie.getBackdrop())).into(mBackdrop);
+            if (rootView.findViewById(R.id.movie_backdrop) != null) {
+                ImageView backdrop = (ImageView) rootView.findViewById(R.id.movie_backdrop);
+                Picasso.with(getContext()).load(MovieUtil.getInstance().getBackdropUrl(mMovie.getBackdrop())).into(backdrop);
+            }
+
+            if (rootView.findViewById(R.id.fav_btn) != null) {
+                FloatingActionButton favBtn = (FloatingActionButton) rootView.findViewById(R.id.fav_btn);
+                favBtn.setVisibility(View.VISIBLE);
+                mMovie.setFavourite(DBUtil.getInstance().isFavourite(getActivity(), mMovie.getId()));
+                if (mMovie.isFavourite()) {
+                    favBtn.setImageDrawable(getActivity().getDrawable(R.drawable.fav_white));
+                } else {
+                    favBtn.setImageDrawable(getActivity().getDrawable(R.drawable.ol_white));
+                }
+                favBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (mMovie.isFavourite()) {
+                            ((FloatingActionButton) v).setImageDrawable(getActivity().getDrawable(R.drawable.ol_white));
+                            Snackbar.make(v, "Removed from favourite", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                            mMovie.setFavourite(false);
+                            DBUtil.getInstance().deleteFavMovie(getContext(), mMovie.getId());
+                        } else {
+                            ((FloatingActionButton) v).setImageDrawable(getActivity().getDrawable(R.drawable.fav_white));
+                            Snackbar.make(v, "Added to favourite", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                            mMovie.setFavourite(true);
+                            DBUtil.getInstance().insertFavMovie(getContext(), mMovie.getId());
+                        }
+                    }
+                });
             }
 
             mTitleTextView.setText(mMovie.getTitle());

@@ -1,5 +1,6 @@
 package com.iamzhaoyuan.android.popularmovies.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -9,6 +10,8 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
+import com.iamzhaoyuan.android.popularmovies.adapter.MovieAdapter;
+import com.iamzhaoyuan.android.popularmovies.entity.Movie;
 import com.iamzhaoyuan.android.popularmovies.fragment.DetailsFragment;
 import com.iamzhaoyuan.android.popularmovies.fragment.PosterFragment;
 import com.iamzhaoyuan.android.popularmovies.R;
@@ -19,7 +22,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MovieAdapter.Callback{
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILSFRAGMENT_TAG = "DFTAG";
 
@@ -63,6 +66,25 @@ public class MainActivity extends AppCompatActivity {
                 PosterFragment.newInstance(getString(R.string.pref_sort_by_favourite)),
                 getString(R.string.pref_sort_by_favourite_label));
         viewPager.setAdapter(adapter);
+    }
+
+    @Override
+    public void onItemSelected(Movie movie) {
+        if (mTwoPane) {
+            Bundle args = new Bundle();
+            args.putParcelable(getString(R.string.intent_movie_obj_tag), movie);
+
+            DetailsFragment detailsFragment = new DetailsFragment();
+            detailsFragment.setArguments(args);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.detail_content, detailsFragment, DETAILSFRAGMENT_TAG)
+                    .commit();
+        } else {
+            Intent intent = new Intent(this, DetailsActivity.class);
+            intent.putExtra(getString(R.string.intent_movie_obj_tag), movie);
+            startActivity(intent);
+        }
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {

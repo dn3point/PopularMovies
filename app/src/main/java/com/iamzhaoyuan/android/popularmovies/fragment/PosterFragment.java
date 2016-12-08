@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -23,7 +22,6 @@ import android.view.ViewGroup;
 import com.iamzhaoyuan.android.popularmovies.BuildConfig;
 import com.iamzhaoyuan.android.popularmovies.R;
 import com.iamzhaoyuan.android.popularmovies.adapter.MovieAdapter;
-import com.iamzhaoyuan.android.popularmovies.data.MovieContract.MovieEntry;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
 import com.iamzhaoyuan.android.popularmovies.listener.OnLoadMoreListener;
 import com.iamzhaoyuan.android.popularmovies.util.DBUtil;
@@ -453,4 +451,5 @@ public class PosterFragment extends Fragment {
             return new Movie(title, posterPath, overview, rating, releaseDate, id, isFavourite, backdrop);
         }
     }
+
 }
