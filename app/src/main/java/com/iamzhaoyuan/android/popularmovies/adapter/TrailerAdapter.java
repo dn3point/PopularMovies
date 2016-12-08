@@ -88,13 +88,6 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MyViewHo
         MyViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
-
-            WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
-            Display display = wm.getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            thumbnail.getLayoutParams().width = itemView.getLayoutParams().width << 1 / 3;
-            thumbnail.getLayoutParams().height = thumbnail.getLayoutParams().width << 1 / 3;
         }
 
     }
