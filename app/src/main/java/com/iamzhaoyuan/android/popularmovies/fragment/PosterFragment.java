@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -23,7 +22,6 @@ import android.view.ViewGroup;
 import com.iamzhaoyuan.android.popularmovies.BuildConfig;
 import com.iamzhaoyuan.android.popularmovies.R;
 import com.iamzhaoyuan.android.popularmovies.adapter.MovieAdapter;
-import com.iamzhaoyuan.android.popularmovies.data.MovieContract.MovieEntry;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
 import com.iamzhaoyuan.android.popularmovies.listener.OnLoadMoreListener;
 import com.iamzhaoyuan.android.popularmovies.util.DBUtil;
@@ -45,21 +43,13 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-
-/**
- * A simple {@link Fragment} subclass.
- */
 public class PosterFragment extends Fragment {
     private static final String LOG_TAG = PosterFragment.class.getSimpleName();
     private static final String SORT_BY_KEY = "sort_by";
+    @BindView(R.id.recycler_view)
+    RecyclerView mRecyclerView;
     private int page = 1;
-    @BindView(R.id.recycler_view) RecyclerView mRecyclerView;
-
     private View mView;
-
-    private static final String[] FAVOURITE_PROJECTION = new String[]{MovieEntry.COLUMN_MOVIE_ID};
-
-    private static final int INDEX_MOVIE_ID = 0;
 
     private MovieAdapter mImageAdapter;
     private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
@@ -123,12 +113,10 @@ public class PosterFragment extends Fragment {
                 mImageAdapter.setOnLoadMoreListener(new OnLoadMoreListener() {
                     @Override
                     public void onLoadMore() {
-                        Log.i(LOG_TAG, "Load more");
                         mImageAdapter.add(null);
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                Log.i(LOG_TAG, "Load more in thread");
                                 updatePosters();
                                 mImageAdapter.setLoading(false);
                             }
@@ -181,23 +169,13 @@ public class PosterFragment extends Fragment {
 
     private void updatePosters() {
         if (isFavouriteTab()) {
-            Cursor cursor = null;
-            try {
-                cursor = getContext().getContentResolver().query(
-                        MovieEntry.CONTENT_URI, FAVOURITE_PROJECTION, null, null, null);
-                List<String> favMovieIds = new ArrayList<>();
-                while (cursor.moveToNext()) {
-                    favMovieIds.add(cursor.getString(INDEX_MOVIE_ID));
-                }
-                if (!favMovieIds.isEmpty()) {
-                    new FetchFavouriteMovieTask().execute(favMovieIds);
-                }
-            } finally {
-                if (cursor != null) {
-                    cursor.close();
-                }
+            List<String> favouriteMovieIds = DBUtil.getInstance().getFavouriteMovieIds(getContext());
+            if (favouriteMovieIds.isEmpty()) {
+                mImageAdapter.clearMovies();
             }
-
+            if (!mImageAdapter.isUpdated(favouriteMovieIds)) {
+                new FetchFavouriteMovieTask().execute(favouriteMovieIds);
+            }
         } else {
             new FetchMovieTask().execute(page);
             page++;
@@ -467,4 +445,5 @@ public class PosterFragment extends Fragment {
             return new Movie(title, posterPath, overview, rating, releaseDate, id, isFavourite, backdrop);
         }
     }
+
 }

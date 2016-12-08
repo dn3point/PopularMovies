@@ -53,7 +53,6 @@
         android:id="@+id/movie_overview"
         android:textSize="@dimen/movie_overview_text_size"
         android:lineSpacingMultiplier="1.2"
-        android:background="@drawable/overview_border"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
         android:layout_marginTop="5dp"
@@ -71,7 +70,6 @@
             android:layout_height="wrap_content"
             android:id="@+id/movie_trailer_title"
             android:textSize="@dimen/movie_trailer_title_text_size"
-            android:text="@string/movie_trailer_title"
             android:paddingBottom="5dp"/>
 
         <android.support.v7.widget.RecyclerView
@@ -95,7 +93,6 @@
             android:layout_height="wrap_content"
             android:id="@+id/movie_review_title"
             android:textSize="@dimen/movie_review_title_text_size"
-            android:text="@string/movie_review_title"
             android:paddingBottom="5dp"/>
 
         <android.support.v7.widget.RecyclerView

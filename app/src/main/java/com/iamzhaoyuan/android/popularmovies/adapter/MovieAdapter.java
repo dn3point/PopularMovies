@@ -22,10 +22,13 @@ import com.iamzhaoyuan.android.popularmovies.activity.DetailsActivity;
 import com.iamzhaoyuan.android.popularmovies.data.MovieContract.MovieEntry;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
 import com.iamzhaoyuan.android.popularmovies.listener.OnLoadMoreListener;
+import com.iamzhaoyuan.android.popularmovies.util.DBUtil;
 import com.iamzhaoyuan.android.popularmovies.util.MovieUtil;
 import com.squareup.picasso.Picasso;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -53,7 +56,7 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
         if (holder instanceof PosterViewHolder) {
-            final PosterViewHolder posterHolder = (PosterViewHolder)holder;
+            final PosterViewHolder posterHolder = (PosterViewHolder) holder;
             final Movie movie = mMovieList.get(position);
             posterHolder.title.setText(movie.getTitle());
 
@@ -82,15 +85,11 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             posterHolder.poster.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(mContext, DetailsActivity.class);
-                    intent.putExtra(
-                            mContext.getString(R.string.intent_movie_obj_tag),
-                            movie);
-                    mContext.startActivity(intent);
+                    ((Callback) mContext).onItemSelected(movie);
                 }
             });
         } else if (holder instanceof ProgressViewHolder) {
-            ProgressViewHolder progressHolder = (ProgressViewHolder)holder;
+            ProgressViewHolder progressHolder = (ProgressViewHolder) holder;
             progressHolder.progressBar.setIndeterminate(true);
         } else {
             Log.d(LOG_TAG, "ViewHolder type issue: " + holder.getClass().getSimpleName());
@@ -117,13 +116,9 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     private void updateFavouriteDB(Movie movie) {
         if (movie.isFavourite()) {
-            ContentValues updateValues = new ContentValues();
-            updateValues.put(MovieEntry.COLUMN_MOVIE_ID, movie.getId());
-            mContext.getContentResolver().insert(MovieEntry.CONTENT_URI, updateValues);
+            DBUtil.getInstance().insertFavMovie(mContext, movie.getId());
         } else {
-            String mSelectionClause = MovieEntry.COLUMN_MOVIE_ID + " = ?";
-            String[] mSelectionArgs = {movie.getId()};
-            mContext.getContentResolver().delete(MovieEntry.CONTENT_URI, mSelectionClause, mSelectionArgs);
+            DBUtil.getInstance().deleteFavMovie(mContext, movie.getId());
         }
     }
 
@@ -194,6 +189,21 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         return false;
     }
 
+    public boolean isUpdated(List<String> movieIds) {
+        if (mMovieList != null && !mMovieList.isEmpty()) {
+            if (mMovieList.size() == movieIds.size()) {
+                Set<String> idSet = new HashSet<>(movieIds);
+                for (Movie movie : mMovieList) {
+                    idSet.remove(movie.getId());
+                }
+                if (idSet.isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public int getTotalItemCount() {
         return totalItemCount;
     }
@@ -231,20 +241,18 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     }
 
     class PosterViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.title) TextView title;
-        @BindView(R.id.poster) ImageView poster;
-        @BindView(R.id.favourite) ImageView favourite;
-        @BindView(R.id.rate) TextView rate;
+        @BindView(R.id.title)
+        TextView title;
+        @BindView(R.id.poster)
+        ImageView poster;
+        @BindView(R.id.favourite)
+        ImageView favourite;
+        @BindView(R.id.rate)
+        TextView rate;
 
         PosterViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
-
-            WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
-            Display display = wm.getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            poster.getLayoutParams().height = (size.y << 1) / 5;
         }
 
     }
@@ -257,5 +265,9 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             super(itemView);
             ButterKnife.bind(this, itemView);
         }
+    }
+
+    public interface Callback {
+        void onItemSelected(Movie movie);
     }
 }

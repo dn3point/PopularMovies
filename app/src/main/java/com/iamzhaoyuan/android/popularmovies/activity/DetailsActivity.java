@@ -1,23 +1,18 @@
 package com.iamzhaoyuan.android.popularmovies.activity;
 
-import android.content.ContentValues;
 import android.content.Intent;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Display;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.iamzhaoyuan.android.popularmovies.R;
-import com.iamzhaoyuan.android.popularmovies.data.MovieContract.MovieEntry;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
 import com.iamzhaoyuan.android.popularmovies.fragment.DetailsFragment;
 import com.iamzhaoyuan.android.popularmovies.util.DBUtil;
@@ -30,11 +25,16 @@ import butterknife.ButterKnife;
 public class DetailsActivity extends AppCompatActivity {
     private static final String LOG_TAG = DetailsActivity.class.getSimpleName();
 
-    @BindView(R.id.toolbar) Toolbar mToolbar;
-    @BindView(R.id.collapsing_toolbar) CollapsingToolbarLayout mCollapsingToolbarLayout;
-    @BindView(R.id.appbar) AppBarLayout mAppBarLayout;
-    @BindView(R.id.backdrop) ImageView mImageView;
-    @BindView(R.id.float_btn) FloatingActionButton mFloatingActionButton;
+    @BindView(R.id.toolbar)
+    Toolbar mToolbar;
+    @BindView(R.id.collapsing_toolbar)
+    CollapsingToolbarLayout mCollapsingToolbarLayout;
+    @BindView(R.id.appbar)
+    AppBarLayout mAppBarLayout;
+    @BindView(R.id.backdrop)
+    ImageView mImageView;
+    @BindView(R.id.float_btn)
+    FloatingActionButton mFloatingActionButton;
 
     private Movie mMovie;
 
@@ -65,15 +65,7 @@ public class DetailsActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams)mAppBarLayout.getLayoutParams();
-        lp.height = size.y >> 1;
-
-        Picasso.with(this)
-                .load(MovieUtil.getInstance().getBackdropUrl(mMovie.getBackdrop()))
-                .into(mImageView);
+        Picasso.with(this).load(MovieUtil.getInstance().getBackdropUrl(mMovie.getBackdrop())).into(mImageView);
         mCollapsingToolbarLayout.setTitle(" ");
         mAppBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
             boolean isShow = false;
@@ -87,7 +79,7 @@ public class DetailsActivity extends AppCompatActivity {
                 if (scrollRange + verticalOffset == 0) {
                     mCollapsingToolbarLayout.setTitle(mMovie.getTitle());
                     isShow = true;
-                } else if(isShow) {
+                } else if (isShow) {
                     mCollapsingToolbarLayout.setTitle(" ");
                     isShow = false;
                 }
@@ -106,21 +98,16 @@ public class DetailsActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (mMovie.isFavourite()) {
                     ((FloatingActionButton) v).setImageDrawable(getDrawable(R.drawable.ol_white));
-                    Snackbar.make(v, "Removed from favourite", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                    Snackbar.make(v, getString(R.string.remove_fav_movie), Snackbar.LENGTH_LONG).setAction("Action", null).show();
                     mMovie.setFavourite(false);
-                    String mSelectionClause = MovieEntry.COLUMN_MOVIE_ID + " = ?";
-                    String[] mSelectionArgs = {mMovie.getId()};
-                    getContentResolver().delete(MovieEntry.CONTENT_URI, mSelectionClause, mSelectionArgs);
+                    DBUtil.getInstance().deleteFavMovie(getApplicationContext(), mMovie.getId());
                 } else {
                     ((FloatingActionButton) v).setImageDrawable(getDrawable(R.drawable.fav_white));
-                    Snackbar.make(v, "Added to favourite", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                    Snackbar.make(v, getString(R.string.add_fav_movie), Snackbar.LENGTH_LONG).setAction("Action", null).show();
                     mMovie.setFavourite(true);
-                    ContentValues updateValues = new ContentValues();
-                    updateValues.put(MovieEntry.COLUMN_MOVIE_ID, mMovie.getId());
-                    getContentResolver().insert(MovieEntry.CONTENT_URI, updateValues);
+                    DBUtil.getInstance().insertFavMovie(getApplicationContext(), mMovie.getId());
                 }
             }
         });
     }
-
 }

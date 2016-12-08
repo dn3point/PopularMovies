@@ -28,6 +28,11 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MyViewHo
     private Context mContext;
     private List<String> mTrailerList;
 
+    public TrailerAdapter(Context context, List<String> trailerList) {
+        mContext = context;
+        mTrailerList = trailerList;
+    }
+
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
@@ -77,7 +82,8 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MyViewHo
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.thumbnail) ImageView thumbnail;
+        @BindView(R.id.thumbnail)
+        ImageView thumbnail;
 
         MyViewHolder(View itemView) {
             super(itemView);
@@ -87,15 +93,9 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.MyViewHo
             Display display = wm.getDefaultDisplay();
             Point size = new Point();
             display.getSize(size);
-            thumbnail.getLayoutParams().width = size.x >> 1;
-            thumbnail.getLayoutParams().height = size.x / 3;
+            thumbnail.getLayoutParams().width = itemView.getLayoutParams().width << 1 / 3;
+            thumbnail.getLayoutParams().height = thumbnail.getLayoutParams().width << 1 / 3;
         }
 
     }
-
-    public TrailerAdapter(Context context, List<String> trailerList) {
-        mContext = context;
-        mTrailerList = trailerList;
-    }
-
 }

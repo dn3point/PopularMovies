@@ -4,18 +4,17 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
-import com.iamzhaoyuan.android.popularmovies.data.MovieContract.MovieEntry;
-
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 
+import com.iamzhaoyuan.android.popularmovies.data.MovieContract.MovieEntry;
+
 public class MovieProvider extends ContentProvider {
+    static final int FAVOURITE = 100;
     // The URI Matcher used by this content provider.
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private MovieDBHelper mDBHelper;
-
-    static final int FAVOURITE = 100;
 
     static UriMatcher buildUriMatcher() {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);

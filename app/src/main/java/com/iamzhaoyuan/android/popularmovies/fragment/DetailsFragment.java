@@ -1,10 +1,16 @@
 package com.iamzhaoyuan.android.popularmovies.fragment;
 
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,6 +19,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.iamzhaoyuan.android.popularmovies.BuildConfig;
@@ -21,7 +28,10 @@ import com.iamzhaoyuan.android.popularmovies.adapter.MovieReviewAdapter;
 import com.iamzhaoyuan.android.popularmovies.adapter.TrailerAdapter;
 import com.iamzhaoyuan.android.popularmovies.entity.Movie;
 import com.iamzhaoyuan.android.popularmovies.entity.MovieReview;
+import com.iamzhaoyuan.android.popularmovies.util.DBUtil;
 import com.iamzhaoyuan.android.popularmovies.util.MovieUtil;
+import com.iamzhaoyuan.android.popularmovies.util.NetworkUtil;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,22 +49,39 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-/**
- * A simple {@link Fragment} subclass.
- */
 public class DetailsFragment extends Fragment {
     private static final String LOG_TAG = DetailsFragment.class.getSimpleName();
 
-    @BindView(R.id.movie_title) TextView mTitleTextView;
-    @BindView(R.id.movie_release_date) TextView mReleaseDateTextView;
-    @BindView(R.id.movie_rating) TextView mRatingTextView;
-    @BindView(R.id.movie_overview) TextView mOverviewTextView;
-    @BindView(R.id.trailers) RecyclerView mTrailerRecyclerView;
-    @BindView(R.id.reviews) RecyclerView mReviewRecyclerView;
+    @BindView(R.id.movie_title)
+    TextView mTitleTextView;
+    @BindView(R.id.movie_release_date)
+    TextView mReleaseDateTextView;
+    @BindView(R.id.movie_rating)
+    TextView mRatingTextView;
+    @BindView(R.id.movie_overview)
+    TextView mOverviewTextView;
+    @BindView(R.id.trailers)
+    RecyclerView mTrailerRecyclerView;
+    @BindView(R.id.reviews)
+    RecyclerView mReviewRecyclerView;
+    @BindView(R.id.movie_trailer_title)
+    TextView mTrailerTitle;
+    @BindView(R.id.movie_review_title)
+    TextView mReviewTitle;
 
     private Movie mMovie;
     private TrailerAdapter mTrailerAdapter;
     private MovieReviewAdapter mMovieReviewAdapter;
+
+    private BroadcastReceiver mNetworkReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            NetworkUtil networkUtil = NetworkUtil.getInstance();
+            if (networkUtil.isNetworkConnected(context) && mMovie != null) {
+                updateInfo(mMovie.getId());
+            }
+        }
+    };
 
     public DetailsFragment() {
     }
@@ -62,23 +89,39 @@ public class DetailsFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        if (mMovie != null) {
-            updateInfo(mMovie.getId());
-        } else {
-            Log.d(LOG_TAG, "Movie is null?");
+        if (NetworkUtil.getInstance().isNetworkConnected(getActivity())) {
+            if (mMovie != null) {
+                updateInfo(mMovie.getId());
+            } else {
+                Log.d(LOG_TAG, "Movie is null?");
+            }
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+        getActivity().registerReceiver(mNetworkReceiver, intentFilter);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        getActivity().unregisterReceiver(mNetworkReceiver);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView =
-                inflater.inflate(R.layout.fragment_details, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_details, container, false);
         // Get Movie Obj from intent
-        Intent intent = getActivity().getIntent();
-        if (intent != null) {
-            mMovie = intent.getExtras().getParcelable(getString(R.string.intent_movie_obj_tag));
+        if (getActivity().getIntent() != null && getActivity().getIntent().getExtras() != null) {
+            mMovie = getActivity().getIntent().getExtras().getParcelable(getString(R.string.intent_movie_obj_tag));
+        } else if (getArguments() != null) {
+            mMovie = getArguments().getParcelable(getString(R.string.intent_movie_obj_tag));
         } else {
             Log.d(LOG_TAG, "Intent from MainActivity is null?");
         }
@@ -86,20 +129,54 @@ public class DetailsFragment extends Fragment {
             Log.i(LOG_TAG, mMovie.getId());
             ButterKnife.bind(this, rootView);
             // Set contents
-            MovieUtil movieUtil = MovieUtil.getInstance();
+            if (rootView.findViewById(R.id.movie_backdrop) != null) {
+                ImageView backdrop = (ImageView) rootView.findViewById(R.id.movie_backdrop);
+                Picasso.with(getContext()).load(MovieUtil.getInstance().getBackdropUrl(mMovie.getBackdrop())).into(backdrop);
+            }
+
+            if (rootView.findViewById(R.id.fav_btn) != null) {
+                FloatingActionButton favBtn = (FloatingActionButton) rootView.findViewById(R.id.fav_btn);
+                favBtn.setVisibility(View.VISIBLE);
+                mMovie.setFavourite(DBUtil.getInstance().isFavourite(getActivity(), mMovie.getId()));
+                if (mMovie.isFavourite()) {
+                    favBtn.setImageDrawable(getActivity().getDrawable(R.drawable.fav_white));
+                } else {
+                    favBtn.setImageDrawable(getActivity().getDrawable(R.drawable.ol_white));
+                }
+                favBtn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (mMovie.isFavourite()) {
+                            ((FloatingActionButton) v).setImageDrawable(getActivity().getDrawable(R.drawable.ol_white));
+                            Snackbar.make(v, "Removed from favourite", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                            mMovie.setFavourite(false);
+                            DBUtil.getInstance().deleteFavMovie(getContext(), mMovie.getId());
+                        } else {
+                            ((FloatingActionButton) v).setImageDrawable(getActivity().getDrawable(R.drawable.fav_white));
+                            Snackbar.make(v, "Added to favourite", Snackbar.LENGTH_LONG).setAction("Action", null).show();
+                            mMovie.setFavourite(true);
+                            DBUtil.getInstance().insertFavMovie(getContext(), mMovie.getId());
+                        }
+                    }
+                });
+            }
+
             mTitleTextView.setText(mMovie.getTitle());
             mReleaseDateTextView.setText(getActivity().getString(R.string.movie_released_date_prefix) + mMovie.getReleaseDate());
             mRatingTextView.setText(getActivity().getString(R.string.movie_rating_prefix) + mMovie.getRating());
+            mOverviewTextView.setBackground(getActivity().getDrawable(R.drawable.overview_border));
             mOverviewTextView.setText(mMovie.getOverview());
 
+            mTrailerTitle.setText(getString(R.string.movie_trailer_title));
             mTrailerAdapter = new TrailerAdapter(getActivity(), new ArrayList<String>());
             LinearLayoutManager trailerLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false);
             mTrailerRecyclerView.setLayoutManager(trailerLayoutManager);
             mTrailerRecyclerView.setItemAnimator(new DefaultItemAnimator());
             mTrailerRecyclerView.setAdapter(mTrailerAdapter);
 
+            mReviewTitle.setText(getString(R.string.movie_review_title));
             mMovieReviewAdapter = new MovieReviewAdapter(getActivity(), new ArrayList<MovieReview>());
-            LinearLayoutManager  reviewLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
+            LinearLayoutManager reviewLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false);
             mReviewRecyclerView.setLayoutManager(reviewLayoutManager);
             mReviewRecyclerView.setItemAnimator(new DefaultItemAnimator());
             mReviewRecyclerView.setAdapter(mMovieReviewAdapter);
@@ -187,7 +264,7 @@ public class DetailsFragment extends Fragment {
             return null;
         }
 
-        private List<String> getTrailerFromJson(String trailerJsonStr) throws JSONException{
+        private List<String> getTrailerFromJson(String trailerJsonStr) throws JSONException {
             final String NODE_RESULTS = "results";
             final String NODE_SITE = "site";
             final String Node_KEY = "key";
@@ -211,7 +288,7 @@ public class DetailsFragment extends Fragment {
         @Override
         protected void onPostExecute(List<String> trailerKeyList) {
             if (trailerKeyList != null) {
-                mTrailerAdapter.clearTrailers();;
+                mTrailerAdapter.clearTrailers();
                 mTrailerAdapter.addTrailers(trailerKeyList);
             }
         }
@@ -314,7 +391,8 @@ public class DetailsFragment extends Fragment {
             if (movieReviews != null) {
                 mMovieReviewAdapter.clearMovieReviews();
                 mMovieReviewAdapter.addMovieReviews(movieReviews);
-            };
+            }
+            ;
         }
     }
 }

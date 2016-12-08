@@ -4,6 +4,17 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class MovieReview implements Parcelable {
+    public static final Parcelable.Creator<MovieReview> CREATOR = new Parcelable.Creator<MovieReview>() {
+        @Override
+        public MovieReview createFromParcel(Parcel parcel) {
+            return new MovieReview(parcel);
+        }
+
+        @Override
+        public MovieReview[] newArray(int i) {
+            return new MovieReview[i];
+        }
+    };
     private String mAuthor;
     private String mComment;
 
@@ -27,18 +38,6 @@ public class MovieReview implements Parcelable {
         dest.writeString(mAuthor);
         dest.writeString(mComment);
     }
-
-    public static final Parcelable.Creator<MovieReview> CREATOR = new Parcelable.Creator<MovieReview>(){
-        @Override
-        public MovieReview createFromParcel(Parcel parcel) {
-            return new MovieReview(parcel);
-        }
-
-        @Override
-        public MovieReview[] newArray(int i) {
-            return new MovieReview[i];
-        }
-    };
 
     public String getAuthor() {
         return mAuthor;
