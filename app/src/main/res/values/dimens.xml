@@ -2,25 +2,34 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="tab_max_width">264dp</dimen>
+    <dimen name="tab_padding_bottom">16dp</dimen>
+    <dimen name="tab_label">14sp</dimen>
+    <dimen name="custom_tab_layout_height">72dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="item_offset">10dp</dimen>
+    <dimen name="detail_backdrop_height">250dp</dimen>
+    <dimen name="backdrop_title">30dp</dimen>
+    <dimen name="backdrop_subtitle">18dp</dimen>
+    <dimen name="card_margin">5dp</dimen>
+    <dimen name="card_album_radius">0dp</dimen>
+    <dimen name="album_cover_height">160dp</dimen>
+    <dimen name="album_title_padding">10dp</dimen>
+    <dimen name="album_title">15dp</dimen>
+    <dimen name="songs_count_padding_bottom">5dp</dimen>
+    <dimen name="songs_count">12dp</dimen>
+    <dimen name="ic_album_overflow_width">25dp</dimen>
+    <dimen name="ic_album_overflow_height">25dp</dimen>
+    <dimen name="ic_album_overflow_margin_top">10dp</dimen>
 
     <!-- Details Fragment -->
-    <dimen name="movie_title_padding_left">20dp</dimen>
-    <dimen name="movie_title_padding_right">20dp</dimen>
-    <dimen name="movie_title_padding_top">30dp</dimen>
-    <dimen name="movie_title_padding_bottom">30dp</dimen>
-    <dimen name="movie_title_text_size">40sp</dimen>
-    <dimen name="movie_details_linear_layout_padding">5dp</dimen>
-    <dimen name="movie_poster_layout_width">200dp</dimen>
-    <dimen name="movie_poster_padding_left">25dp</dimen>
-    <dimen name="movie_poster_padding_right">25dp</dimen>
-    <dimen name="movie_info_linear_layout_padding_left">10dp</dimen>
-    <dimen name="movie_info_linear_layout_padding_right">10dp</dimen>
-    <dimen name="movie_release_date_text_size">30sp</dimen>
-    <dimen name="movie_rating_text_size">25sp</dimen>
-    <dimen name="movie_overview_padding_left">20dp</dimen>
-    <dimen name="movie_overview_padding_right">20dp</dimen>
-    <dimen name="movie_overview_padding_top">10dp</dimen>
-    <dimen name="movie_overview_padding_bottom">10dp</dimen>
+    <dimen name="movie_title_text_size">20sp</dimen>
+    <dimen name="movie_release_date_text_size">15sp</dimen>
+    <dimen name="movie_rating_text_size">15sp</dimen>
     <dimen name="movie_overview_text_size">15sp</dimen>
+    <dimen name="movie_trailer_title_text_size">18sp</dimen>
+    <dimen name="movie_review_title_text_size">18sp</dimen>
+    <dimen name="movie_review_author_text_size">16sp</dimen>
+    <dimen name="movie_review_text_size">15sp</dimen>
 
 </resources>

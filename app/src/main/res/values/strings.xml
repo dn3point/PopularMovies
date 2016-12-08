@@ -3,6 +3,7 @@
     <string name="title_activity_main">Pop Movies</string>
     <string name="title_activity_settings">Settings</string>
     <string name="title_activity_details">Movie Details</string>
+    <string name="content_authority">com.iamzhaoyuan.android.popularmovies</string>
 
     <!-- Menu -->
     <string name="action_settings">Settings</string>
@@ -11,14 +12,22 @@
     <string name="pref_sort_by_label">Sort by</string>
     <string name="pref_sort_by_popular_label">Most Popular</string>
     <string name="pref_sort_by_top_rated_label">Highest Rated</string>
+    <string name="pref_sort_by_favourite_label">Favourite</string>
     <string name="pref_sort_by_key">sort_by</string>
     <string name="pref_sort_by_popular">popular</string>
     <string name="pref_sort_by_top_rated">top_rated</string>
+    <string name="pref_sort_by_favourite">favourite</string>
 
     <!-- Intent -->
     <string name="intent_movie_obj_tag">movie_obj</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!-- DetailFragment -->
+    <string name="movie_released_date_prefix">Release Date :\u0020</string>
+    <string name="movie_rating_prefix">Average rate :\u0020</string>
+    <string name="movie_trailer_title">Trailers</string>
+    <string name="movie_review_title">Reviews</string>
+    <string name="expand_icon_content_desc">Expand or Collapse</string>
 
+    <string name="remove_fav_movie">Removed from favourite</string>
+    <string name="add_fav_movie">Added to favourite</string>
 </resources>
